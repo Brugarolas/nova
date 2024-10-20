@@ -216,7 +216,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     continue;
                 }
                 placeholder = input.to_string();
-                agent.run_in_realm(&realm, |agent| {
+                agent.run_in_realm(&realm, |ctx| {
                     let realm = agent.current_realm_id();
                     let source_text = JsString::from_string(agent, input);
                     let script = match parse_script(agent, source_text, realm, true, None) {
