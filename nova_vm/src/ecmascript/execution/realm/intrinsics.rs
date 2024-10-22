@@ -143,6 +143,7 @@ use crate::{
         },
         types::{Object, OrdinaryObject},
     },
+    engine::context::Context,
     heap::{
         indexes::{ArrayIndex, BuiltinFunctionIndex, ObjectIndex, PrimitiveObjectIndex},
         intrinsic_function_count, intrinsic_object_count, intrinsic_primitive_object_count,
@@ -229,7 +230,7 @@ pub enum ProtoIntrinsics {
 }
 
 impl Intrinsics {
-    pub(crate) fn new(agent: &mut Agent) -> Self {
+    pub(crate) fn new(agent: Context<'_, '_, '_>) -> Self {
         // Use from_usize to index "one over the edge", ie. where new intrinsics will be created.
         let object_index_base = ObjectIndex::from_index(agent.heap.objects.len());
         let primitive_object_index_base =
@@ -260,7 +261,7 @@ impl Intrinsics {
         }
     }
 
-    pub(crate) fn create_intrinsics(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsics(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         GlobalObject::create_intrinsic(agent, realm);
         ObjectPrototype::create_intrinsic(agent, realm);
         ObjectConstructor::create_intrinsic(agent, realm);

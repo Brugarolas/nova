@@ -9,6 +9,7 @@ use crate::{
         execution::{Agent, JsResult, RealmIdentifier},
         types::{IntoObject, Object, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::IntrinsicConstructorIndexes,
 };
 
@@ -26,7 +27,7 @@ impl BuiltinIntrinsicConstructor for AggregateErrorConstructor {
 
 impl AggregateErrorConstructor {
     fn behaviour(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -34,7 +35,7 @@ impl AggregateErrorConstructor {
         todo!()
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let aggregate_error_prototype = intrinsics.aggregate_error_prototype();
 

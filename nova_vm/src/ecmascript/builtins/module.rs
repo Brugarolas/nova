@@ -15,6 +15,7 @@ use crate::{
             PropertyDescriptor, PropertyKey, String, Value,
         },
     },
+    engine::context::Context,
     heap::{CompactionLists, HeapMarkAndSweep, WorkQueues},
 };
 
@@ -116,7 +117,7 @@ impl InternalSlots for Module {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 
@@ -128,44 +129,44 @@ impl InternalSlots for Module {
         false
     }
 
-    fn internal_set_extensible(self, _agent: &mut Agent, _value: bool) {}
+    fn internal_set_extensible(self, _agent: Context<'_, '_, '_>, _value: bool) {}
 
     fn internal_prototype(self, _agent: &Agent) -> Option<Object> {
         None
     }
 
-    fn internal_set_prototype(self, _agent: &mut Agent, _prototype: Option<Object>) {}
+    fn internal_set_prototype(self, _agent: Context<'_, '_, '_>, _prototype: Option<Object>) {}
 }
 
 impl InternalMethods for Module {
     /// ### [10.4.6.1 \[\[GetPrototypeOf\]\] ( )](https://tc39.es/ecma262/#sec-module-namespace-exotic-objects-getprototypeof)
-    fn internal_get_prototype_of(self, _agent: &mut Agent) -> JsResult<Option<Object>> {
+    fn internal_get_prototype_of(self, _agent: Context<'_, '_, '_>) -> JsResult<Option<Object>> {
         Ok(None)
     }
 
     /// ### [10.4.6.2 \[\[SetPrototypeOf\]\] ( V )](https://tc39.es/ecma262/#sec-module-namespace-exotic-objects-setprototypeof-v)
     fn internal_set_prototype_of(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         prototype: Option<Object>,
     ) -> JsResult<bool> {
         set_immutable_prototype(agent, self.into_object(), prototype)
     }
 
     /// ### [10.4.6.3 \[\[IsExtensible\]\] ( )](https://tc39.es/ecma262/#sec-module-namespace-exotic-objects-isextensible)
-    fn internal_is_extensible(self, _agent: &mut Agent) -> JsResult<bool> {
+    fn internal_is_extensible(self, _agent: Context<'_, '_, '_>) -> JsResult<bool> {
         Ok(false)
     }
 
     /// ### [10.4.6.4 \[\[PreventExtensions\]\] ( )](https://tc39.es/ecma262/#sec-module-namespace-exotic-objects-preventextensions)
-    fn internal_prevent_extensions(self, _agent: &mut Agent) -> JsResult<bool> {
+    fn internal_prevent_extensions(self, _agent: Context<'_, '_, '_>) -> JsResult<bool> {
         Ok(true)
     }
 
     /// 10.4.6.5 \[\[GetOwnProperty\]\] ( P )
     fn internal_get_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
     ) -> JsResult<Option<PropertyDescriptor>> {
         match property_key {
@@ -210,7 +211,7 @@ impl InternalMethods for Module {
     /// ### [10.4.6.6 \[\[DefineOwnProperty\]\] ( P, Desc )](https://tc39.es/ecma262/#sec-module-namespace-exotic-objects-defineownproperty-p-desc)
     fn internal_define_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         property_descriptor: PropertyDescriptor,
     ) -> JsResult<bool> {
@@ -265,7 +266,11 @@ impl InternalMethods for Module {
     }
 
     /// ### [10.4.6.7 \[\[HasProperty\]\] ( P )](https://tc39.es/ecma262/#sec-module-namespace-exotic-objects-hasproperty-p)
-    fn internal_has_property(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_has_property(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         match property_key {
             PropertyKey::Integer(_) => Ok(false),
             PropertyKey::SmallString(_) | PropertyKey::String(_) => {
@@ -296,7 +301,7 @@ impl InternalMethods for Module {
     /// ### [10.4.6.8 \[\[Get\]\] ( P, Receiver )](https://tc39.es/ecma262/#sec-module-namespace-exotic-objects-get-p-receiver)
     fn internal_get(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         receiver: Value,
     ) -> JsResult<Value> {
@@ -371,7 +376,7 @@ impl InternalMethods for Module {
     /// ### [10.4.6.9 \[\[Set\]\] ( P, V, Receiver )](https://tc39.es/ecma262/#sec-module-namespace-exotic-objects-set-p-v-receiver)
     fn internal_set(
         self,
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _property_key: PropertyKey,
         _value: Value,
         _receiver: Value,
@@ -380,7 +385,11 @@ impl InternalMethods for Module {
     }
 
     /// ### [10.4.6.10 \[\[Delete\]\] ( P )](https://tc39.es/ecma262/#sec-module-namespace-exotic-objects-delete-p)
-    fn internal_delete(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_delete(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         match property_key {
             PropertyKey::Symbol(_) => {
                 // 1. If P is a Symbol, then
@@ -410,7 +419,7 @@ impl InternalMethods for Module {
     }
 
     /// ### [10.4.6.11 \[\[OwnPropertyKeys\]\] ( )])(https://tc39.es/ecma262/#sec-module-namespace-exotic-objects-ownpropertykeys)
-    fn internal_own_property_keys(self, agent: &mut Agent) -> JsResult<Vec<PropertyKey>> {
+    fn internal_own_property_keys(self, agent: Context<'_, '_, '_>) -> JsResult<Vec<PropertyKey>> {
         // 1. Let exports be O.[[Exports]].
         let exports = agent[self]
             .exports

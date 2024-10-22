@@ -16,6 +16,7 @@ use crate::{
         execution::{agent::ExceptionType, Agent, JsResult, RealmIdentifier},
         types::{IntoValue, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
 };
 
@@ -32,7 +33,11 @@ impl Builtin for SetIteratorPrototypeNext {
 }
 
 impl SetIteratorPrototype {
-    fn next(agent: &mut Agent, this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn next(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 27.5.3.2 GeneratorValidate ( generator, generatorBrand )
         // 3. If generator.[[GeneratorBrand]] is not generatorBrand, throw a TypeError exception.
         let Value::SetIterator(iterator) = this_value else {
@@ -88,7 +93,7 @@ impl SetIteratorPrototype {
         Ok(create_iter_result_object(agent, Value::Undefined, true).into_value())
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let this = intrinsics.set_iterator_prototype();
         let iterator_prototype = intrinsics.iterator_prototype();

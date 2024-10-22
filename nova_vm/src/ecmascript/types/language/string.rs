@@ -13,7 +13,10 @@ use super::{
 };
 use crate::{
     ecmascript::{execution::Agent, types::PropertyDescriptor},
-    engine::rootable::{HeapRootData, HeapRootRef, Rootable},
+    engine::{
+        context::Context,
+        rootable::{HeapRootData, HeapRootRef, Rootable},
+    },
     heap::{
         indexes::StringIndex, CompactionLists, CreateHeapData, Heap, HeapMarkAndSweep,
         PrimitiveHeap, WorkQueues,
@@ -225,11 +228,11 @@ impl String {
         self == Self::EMPTY_STRING
     }
 
-    pub fn from_str(agent: &mut Agent, str: &str) -> String {
+    pub fn from_str(agent: Context<'_, '_, '_>, str: &str) -> String {
         agent.heap.create(str)
     }
 
-    pub fn from_string(agent: &mut Agent, string: std::string::String) -> String {
+    pub fn from_string(agent: Context<'_, '_, '_>, string: std::string::String) -> String {
         agent.heap.create(string)
     }
 
@@ -240,7 +243,7 @@ impl String {
         }
     }
 
-    pub fn from_static_str(agent: &mut Agent, str: &'static str) -> Self {
+    pub fn from_static_str(agent: Context<'_, '_, '_>, str: &'static str) -> Self {
         if let Ok(value) = String::try_from(str) {
             value
         } else {
@@ -257,7 +260,7 @@ impl String {
         String::SmallString(SmallString::from_str_unchecked(message))
     }
 
-    pub fn concat(agent: &mut Agent, strings: impl AsRef<[String]>) -> String {
+    pub fn concat(agent: Context<'_, '_, '_>, strings: impl AsRef<[String]>) -> String {
         // TODO: This function will need heavy changes once we support creating
         // WTF-8 strings, since WTF-8 concatenation isn't byte concatenation.
 
@@ -430,7 +433,7 @@ impl String {
 
     pub(crate) fn get_property_descriptor(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
     ) -> Option<PropertyDescriptor> {
         if property_key == BUILTIN_STRING_MEMORY.length.into() {

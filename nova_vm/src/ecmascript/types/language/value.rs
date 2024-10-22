@@ -52,6 +52,7 @@ use crate::{
         types::BUILTIN_STRING_MEMORY,
     },
     engine::{
+        context::Context,
         rootable::{HeapRootData, HeapRootRef, Rootable},
         small_f64::SmallF64,
     },
@@ -347,19 +348,19 @@ pub(crate) const EMBEDDER_OBJECT_DISCRIMINANT: u8 =
     value_discriminant(Value::EmbedderObject(EmbedderObject::_def()));
 
 impl Value {
-    pub fn from_str(agent: &mut Agent, str: &str) -> Value {
+    pub fn from_str(agent: Context<'_, '_, '_>, str: &str) -> Value {
         String::from_str(agent, str).into_value()
     }
 
-    pub fn from_string(agent: &mut Agent, string: std::string::String) -> Value {
+    pub fn from_string(agent: Context<'_, '_, '_>, string: std::string::String) -> Value {
         String::from_string(agent, string).into_value()
     }
 
-    pub fn from_static_str(agent: &mut Agent, str: &'static str) -> Value {
+    pub fn from_static_str(agent: Context<'_, '_, '_>, str: &'static str) -> Value {
         String::from_static_str(agent, str).into_value()
     }
 
-    pub fn from_f64(agent: &mut Agent, value: f64) -> Value {
+    pub fn from_f64(agent: Context<'_, '_, '_>, value: f64) -> Value {
         Number::from_f64(agent, value).into_value()
     }
 
@@ -471,41 +472,41 @@ impl Value {
         }
     }
 
-    pub fn to_number(self, agent: &mut Agent) -> JsResult<Number> {
+    pub fn to_number(self, agent: Context<'_, '_, '_>) -> JsResult<Number> {
         to_number(agent, self)
     }
 
-    pub fn to_bigint(self, agent: &mut Agent) -> JsResult<BigInt> {
+    pub fn to_bigint(self, agent: Context<'_, '_, '_>) -> JsResult<BigInt> {
         to_big_int(agent, self)
     }
 
-    pub fn to_numeric(self, agent: &mut Agent) -> JsResult<Numeric> {
+    pub fn to_numeric(self, agent: Context<'_, '_, '_>) -> JsResult<Numeric> {
         to_numeric(agent, self)
     }
 
-    pub fn to_int32(self, agent: &mut Agent) -> JsResult<i32> {
+    pub fn to_int32(self, agent: Context<'_, '_, '_>) -> JsResult<i32> {
         to_int32(agent, self)
     }
 
-    pub fn to_uint32(self, agent: &mut Agent) -> JsResult<u32> {
+    pub fn to_uint32(self, agent: Context<'_, '_, '_>) -> JsResult<u32> {
         to_uint32(agent, self)
     }
 
-    pub fn to_int16(self, agent: &mut Agent) -> JsResult<i16> {
+    pub fn to_int16(self, agent: Context<'_, '_, '_>) -> JsResult<i16> {
         to_int16(agent, self)
     }
 
-    pub fn to_uint16(self, agent: &mut Agent) -> JsResult<u16> {
+    pub fn to_uint16(self, agent: Context<'_, '_, '_>) -> JsResult<u16> {
         to_uint16(agent, self)
     }
 
-    pub fn to_string(self, agent: &mut Agent) -> JsResult<String> {
+    pub fn to_string(self, agent: Context<'_, '_, '_>) -> JsResult<String> {
         to_string(agent, self)
     }
 
     /// A string conversion that will never throw, meant for things like
     /// displaying exceptions.
-    pub fn string_repr(self, agent: &mut Agent) -> String {
+    pub fn string_repr(self, agent: Context<'_, '_, '_>) -> String {
         if let Value::Symbol(symbol_idx) = self {
             // ToString of a symbol always throws. We use the descriptive
             // string instead (the result of `String(symbol)`).
@@ -521,7 +522,7 @@ impl Value {
     }
 
     /// ### [ℝ](https://tc39.es/ecma262/#%E2%84%9D)
-    pub fn to_real(self, agent: &mut Agent) -> JsResult<f64> {
+    pub fn to_real(self, agent: Context<'_, '_, '_>) -> JsResult<f64> {
         Ok(match self {
             Value::Number(n) => agent[n],
             Value::Integer(i) => i.into_i64() as f64,

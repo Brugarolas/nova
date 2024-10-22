@@ -12,6 +12,7 @@ use crate::{
         execution::{Agent, JsResult, RealmIdentifier},
         types::{IntoObject, Object, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::IntrinsicConstructorIndexes,
 };
 
@@ -152,7 +153,7 @@ impl BuiltinIntrinsicConstructor for Float64ArrayConstructor {
 
 impl TypedArrayConstructors {
     fn int8_array_constructor(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -161,7 +162,7 @@ impl TypedArrayConstructors {
     }
 
     fn uint8_array_constructor(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -170,7 +171,7 @@ impl TypedArrayConstructors {
     }
 
     fn uint8_clamped_array_constructor(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -179,7 +180,7 @@ impl TypedArrayConstructors {
     }
 
     fn int16_array_constructor(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -188,7 +189,7 @@ impl TypedArrayConstructors {
     }
 
     fn uint16_array_constructor(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -197,7 +198,7 @@ impl TypedArrayConstructors {
     }
 
     fn int32_array_constructor(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -206,7 +207,7 @@ impl TypedArrayConstructors {
     }
 
     fn uint32_array_constructor(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -215,7 +216,7 @@ impl TypedArrayConstructors {
     }
 
     fn big_int64_array_constructor(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -224,7 +225,7 @@ impl TypedArrayConstructors {
     }
 
     fn big_uint64_array_constructor(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -233,7 +234,7 @@ impl TypedArrayConstructors {
     }
 
     fn float32_array_constructor(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -242,7 +243,7 @@ impl TypedArrayConstructors {
     }
 
     fn float64_array_constructor(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -250,7 +251,7 @@ impl TypedArrayConstructors {
         todo!()
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let typed_array_constructor = intrinsics.typed_array().into_object();
 
@@ -428,7 +429,7 @@ impl TypedArrayConstructors {
 
 pub(crate) struct TypedArrayPrototypes;
 impl TypedArrayPrototypes {
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let typed_array_prototype = intrinsics.typed_array_prototype();
 

@@ -12,6 +12,7 @@ use crate::{
             BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::indexes::ArrayBufferIndex,
     Heap,
 };
@@ -34,7 +35,7 @@ pub(crate) enum Ordering {
 /// either a normal completion containing an ArrayBuffer or a throw
 /// completion. It is used to create an ArrayBuffer.
 pub(crate) fn allocate_array_buffer(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     // TODO: Verify that constructor is %ArrayBuffer% and if not,
     // create the `ObjectHeapData` for obj.
     _constructor: Function,
@@ -116,7 +117,7 @@ pub(crate) fn is_detached_buffer(agent: &Agent, array_buffer: ArrayBuffer) -> bo
 /// normal completion containing UNUSED or a throw completion.
 pub(crate) fn detach_array_buffer(
     array_buffer: ArrayBuffer,
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     _key: Option<DetachKey>,
 ) {
     // 1. Assert: IsSharedArrayBuffer(arrayBuffer) is false.
@@ -140,7 +141,7 @@ pub(crate) fn detach_array_buffer(
 /// creates a new ArrayBuffer whose data is a copy of srcBuffer's data over the
 /// range starting at srcByteOffset and continuing for srcLength bytes.
 pub(crate) fn clone_array_buffer(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     src_buffer: ArrayBuffer,
     src_byte_offset: usize,
     src_length: usize,
@@ -180,7 +181,7 @@ pub(crate) fn clone_array_buffer(
 /// completion containing either a non-negative integer or EMPTY, or a throw
 /// completion.
 pub(crate) fn get_array_buffer_max_byte_length_option(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     options: Value,
 ) -> JsResult<Option<i64>> {
     // 1. If options is not an Object, return EMPTY.
@@ -237,7 +238,7 @@ pub(crate) fn get_array_buffer_max_byte_length_option(
 /// NormalCompletion(UNHANDLED).
 pub(crate) fn host_resize_array_buffer(
     _buffer: ArrayBuffer,
-    _agent: &mut Agent,
+    _agent: Context<'_, '_, '_>,
     _new_byte_length: u64,
 ) -> bool {
     false

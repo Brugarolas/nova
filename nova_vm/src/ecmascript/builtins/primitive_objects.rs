@@ -20,6 +20,7 @@ use crate::{
             SMALL_STRING_DISCRIMINANT, STRING_DISCRIMINANT, SYMBOL_DISCRIMINANT,
         },
     },
+    engine::context::Context,
     engine::small_f64::SmallF64,
     heap::{
         indexes::PrimitiveObjectIndex, CompactionLists, CreateHeapData, Heap, HeapMarkAndSweep,
@@ -164,7 +165,7 @@ impl InternalSlots for PrimitiveObject {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 
@@ -204,7 +205,7 @@ impl InternalSlots for PrimitiveObject {
 impl InternalMethods for PrimitiveObject {
     fn internal_get_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
     ) -> JsResult<Option<PropertyDescriptor>> {
         // For non-string primitive objects:
@@ -230,7 +231,7 @@ impl InternalMethods for PrimitiveObject {
 
     fn internal_define_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         property_descriptor: PropertyDescriptor,
     ) -> JsResult<bool> {
@@ -258,7 +259,11 @@ impl InternalMethods for PrimitiveObject {
         ordinary_define_own_property(agent, backing_object, property_key, property_descriptor)
     }
 
-    fn internal_has_property(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_has_property(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         if let Ok(string) = String::try_from(agent[self].data) {
             if string
                 .get_property_descriptor(agent, property_key)
@@ -291,7 +296,7 @@ impl InternalMethods for PrimitiveObject {
 
     fn internal_get(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         receiver: Value,
     ) -> JsResult<Value> {
@@ -321,7 +326,7 @@ impl InternalMethods for PrimitiveObject {
 
     fn internal_set(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         value: Value,
         receiver: Value,
@@ -343,7 +348,11 @@ impl InternalMethods for PrimitiveObject {
         ordinary_set(agent, backing_object, property_key, value, receiver)
     }
 
-    fn internal_delete(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_delete(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         if let Ok(string) = String::try_from(agent[self].data) {
             if string
                 .get_property_descriptor(agent, property_key)
@@ -362,7 +371,7 @@ impl InternalMethods for PrimitiveObject {
         }
     }
 
-    fn internal_own_property_keys(self, agent: &mut Agent) -> JsResult<Vec<PropertyKey>> {
+    fn internal_own_property_keys(self, agent: Context<'_, '_, '_>) -> JsResult<Vec<PropertyKey>> {
         if let Ok(string) = String::try_from(agent[self].data) {
             let len = string.utf16_len(agent);
             let mut keys = Vec::with_capacity(len + 1);

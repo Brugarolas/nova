@@ -21,6 +21,7 @@ use crate::{
         execution::Agent,
         types::{HeapString, String},
     },
+    engine::context::Context,
     heap::{
         indexes::BaseIndex, CompactionLists, CreateHeapData, Heap, HeapMarkAndSweep, WorkQueues,
     },
@@ -40,7 +41,7 @@ impl SourceCode {
     /// The caller must keep the SourceCode from being garbage collected until
     /// they drop the parsed code.
     pub(crate) unsafe fn parse_source(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         source: String,
         source_type: SourceType,
     ) -> Result<(Program<'static>, Self), Vec<OxcDiagnostic>> {

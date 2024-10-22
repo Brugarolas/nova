@@ -34,6 +34,7 @@ use crate::{
             Value, BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::{Heap, IntrinsicFunctionIndexes, WellKnownSymbolIndexes},
     SmallInteger,
 };
@@ -282,7 +283,11 @@ impl Builtin for ArrayPrototypeWith {
 
 impl ArrayPrototype {
     /// ### [23.1.3.1 Array.prototype.at ( index )](https://tc39.es/ecma262/#sec-array.prototype.at)
-    fn at(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn at(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let O be ? ToObject(this value).
         let o = to_object(agent, this_value)?;
         // 2. Let len be ? LengthOfArrayLike(O).
@@ -329,7 +334,11 @@ impl ArrayPrototype {
     /// > Note 2: This method is intentionally generic; it does not require
     /// > that its this value be an Array. Therefore it can be transferred to
     /// > other kinds of objects for use as a method.
-    fn concat(agent: &mut Agent, this_value: Value, items: ArgumentsList) -> JsResult<Value> {
+    fn concat(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        items: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let O be ? ToObject(this value).
         let o = to_object(agent, this_value)?;
         // 2. Let A be ? ArraySpeciesCreate(O, 0).
@@ -431,7 +440,7 @@ impl ArrayPrototype {
     /// > this value be an Array. Therefore it can be transferred to other
     /// > kinds of objects for use as a method.
     fn copy_within(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -584,7 +593,7 @@ impl ArrayPrototype {
         Ok(o.into_value())
     }
 
-    fn entries(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn entries(agent: Context<'_, '_, '_>, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         // 1. Let O be ? ToObject(this value).
         let Ok(o) = Object::try_from(this_value) else {
             return Err(agent.throw_exception_with_static_message(
@@ -632,7 +641,11 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that its this
     /// > value be an Array. Therefore it can be transferred to other kinds of
     /// > objects for use as a method.
-    fn every(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn every(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let O be ? ToObject(this value).
         let o = to_object(agent, this_value)?;
         // 2. Let len be ? LengthOfArrayLike(O).
@@ -699,7 +712,11 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that its
     /// > this value be an Array. Therefore it can be transferred to other
     /// > kinds of objects for use as a method.
-    fn fill(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn fill(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let value = arguments.get(0);
         let start = arguments.get(1);
         let end = arguments.get(2);
@@ -825,7 +842,11 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that its
     /// > **this** value be an Array. Therefore it can be transferred to other
     /// > kinds of objects for use as a method.
-    fn filter(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn filter(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let callback_fn = arguments.get(0);
         let this_arg = arguments.get(1);
 
@@ -900,7 +921,11 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that its
     /// > this value be an Array. Therefore it can be transferred to other
     /// > kinds of objects for use as a method.
-    fn find(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn find(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let O be ? ToObject(this value).
         let o = to_object(agent, this_value)?;
         // 2. Let len be ? LengthOfArrayLike(O).
@@ -931,7 +956,7 @@ impl ArrayPrototype {
     /// > this value be an Array. Therefore it can be transferred to other
     /// > kinds of objects for use as a method.
     fn find_index(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -949,7 +974,7 @@ impl ArrayPrototype {
 
     /// ### [23.1.3.11 Array.prototype.findLast ( predicate \[ , thisArg \] )](https://tc39.es/ecma262/#sec-array.prototype.findlast)
     fn find_last(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -967,7 +992,7 @@ impl ArrayPrototype {
 
     /// ### [23.1.3.12 Array.prototype.findLastIndex ( predicate \[ , thisArg \] )](https://tc39.es/ecma262/#sec-array.prototype.findlastindex)
     fn find_last_index(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -984,7 +1009,11 @@ impl ArrayPrototype {
     }
 
     /// ### [23.1.3.13 Array.prototype.flat ( \[ depth \] )]()
-    fn flat(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn flat(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let depth = arguments.get(0);
         // 1. Let O be ? ToObject(this value).
         let o = to_object(agent, this_value)?;
@@ -1019,7 +1048,11 @@ impl ArrayPrototype {
     }
 
     /// ### [23.1.3.14 Array.prototype.flatMap ( mapperFunction \[ , thisArg \] )](https://tc39.es/ecma262/#sec-array.prototype.flatmap)
-    fn flat_map(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn flat_map(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let mapper_function = arguments.get(0);
         let this_arg = arguments.get(1);
 
@@ -1085,7 +1118,11 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that
     /// > its this value be an Array. Therefore it can be transferred to
     /// > other kinds of objects for use as a method.
-    fn for_each(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn for_each(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let O be ? ToObject(this value).
         let o = to_object(agent, this_value)?;
         // 2. Let len be ? LengthOfArrayLike(O).
@@ -1162,7 +1199,11 @@ impl ArrayPrototype {
     /// > of IsStrictlyEqual, allowing it to detect NaN array elements.
     /// > Second, it does not skip missing array elements, instead treating
     /// > them as undefined.
-    fn includes(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn includes(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let search_element = arguments.get(0);
         let from_index = arguments.get(1);
         if let (Value::Array(array), Value::Undefined | Value::Integer(_)) =
@@ -1280,7 +1321,11 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that
     /// > its this value be an Array. Therefore it can be transferred to
     /// > other kinds of objects for use as a method.
-    fn index_of(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn index_of(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let search_element = arguments.get(0);
         let from_index = arguments.get(1);
         if let (Value::Array(array), Value::Undefined | Value::Integer(_)) =
@@ -1388,7 +1433,11 @@ impl ArrayPrototype {
     /// This method converts the elements of the array to Strings, and then
     /// concatenates these Strings, separated by occurrences of the separator.
     /// If no separator is provided, a single comma is used as the separator.
-    fn join(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn join(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let separator = arguments.get(0);
 
         // 1. Let O be ? ToObject(this value).
@@ -1439,7 +1488,7 @@ impl ArrayPrototype {
         Ok(Value::from_string(agent, r).into_value())
     }
 
-    fn keys(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn keys(agent: Context<'_, '_, '_>, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         // 1. Let O be ? ToObject(this value).
         let Ok(o) = Object::try_from(this_value) else {
             return Err(agent.throw_exception_with_static_message(
@@ -1473,7 +1522,7 @@ impl ArrayPrototype {
     /// > this value be an Array. Therefore it can be transferred to other
     /// > kinds of objects for use as a method.
     fn last_index_of(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -1610,7 +1659,11 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that its
     /// > this value be an Array. Therefore it can be transferred to other
     /// > kinds of objects for use as a method.
-    fn map(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn map(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let callback_fn = arguments.get(0);
         let this_arg = arguments.get(1);
 
@@ -1671,7 +1724,7 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that
     /// > its this value be an Array. Therefore it can be transferred to
     /// > other kinds of objects for use as a method.
-    fn pop(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn pop(agent: Context<'_, '_, '_>, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         if let Value::Array(array) = this_value {
             // Fast path: Trivial (no descriptors) array means mutating
             // elements is direct.
@@ -1760,7 +1813,11 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that
     /// > its this value be an Array. Therefore it can be transferred to
     /// > other kinds of objects for use as a method.
-    fn push(agent: &mut Agent, this_value: Value, items: ArgumentsList) -> JsResult<Value> {
+    fn push(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        items: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let O be ? ToObject(this value).
         let o = to_object(agent, this_value)?;
         // 2. Let len be ? LengthOfArrayLike(O).
@@ -1840,7 +1897,11 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that
     /// > its this value be an Array. Therefore it can be transferred to
     /// > other kinds of objects for use as a method.
-    fn reduce(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn reduce(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let callback_fn = arguments.get(0);
         let initial_value = if arguments.len() >= 2 {
             Some(arguments.get(1))
@@ -1981,7 +2042,7 @@ impl ArrayPrototype {
     /// > this value be an Array. Therefore it can be transferred to other
     /// > kinds of objects for use as a method.
     fn reduce_right(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -2088,7 +2149,7 @@ impl ArrayPrototype {
         Ok(accumulator)
     }
 
-    fn reverse(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn reverse(agent: Context<'_, '_, '_>, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         if let Value::Array(array) = this_value {
             // Fast path: Array is dense and contains no descriptors. No JS
             // functions can thus be called by shift.
@@ -2170,7 +2231,7 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that its
     /// > this value be an Array. Therefore it can be transferred to other
     /// > kinds of objects for use as a method.
-    fn shift(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn shift(agent: Context<'_, '_, '_>, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         if let Value::Array(array) = this_value {
             if array.is_empty(agent) {
                 if agent[array].elements.len_writable {
@@ -2286,7 +2347,11 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that its
     /// > this value be an Array. Therefore it can be transferred to other
     /// > kinds of objects for use as a method.
-    fn slice(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn slice(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let start = arguments.get(0);
         let end = arguments.get(1);
         if let (
@@ -2490,7 +2555,11 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that its
     /// > this value be an Array. Therefore it can be transferred to other
     /// > kinds of objects for use as a method.
-    fn some(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn some(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let callback_fn = arguments.get(0);
         let this_arg = arguments.get(1);
 
@@ -2564,7 +2633,7 @@ impl ArrayPrototype {
     /// > This method is intentionally generic; it does not require that its
     /// > this value be an Array. Therefore, it can be transferred to other
     /// > kinds of objects for use as a method.
-    fn sort(agent: &mut Agent, this_value: Value, args: ArgumentsList) -> JsResult<Value> {
+    fn sort(agent: Context<'_, '_, '_>, this_value: Value, args: ArgumentsList) -> JsResult<Value> {
         let comparator = args.get(0);
         // 1. If comparator is not undefined and IsCallable(comparator) is false, throw a TypeError exception.
         let comparator = if comparator.is_undefined() {
@@ -2612,32 +2681,52 @@ impl ArrayPrototype {
         Ok(obj.into_value())
     }
 
-    fn splice(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
-        todo!();
-    }
-
-    fn to_locale_string(
-        _agent: &mut Agent,
+    fn splice(
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _: ArgumentsList,
     ) -> JsResult<Value> {
         todo!();
     }
 
-    fn to_reversed(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn to_locale_string(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
-    fn to_sorted(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn to_reversed(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
-    fn to_spliced(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn to_sorted(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
+        todo!();
+    }
+
+    fn to_spliced(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
     /// ### [23.1.3.36 Array.prototype.toString ( )](https://tc39.es/ecma262/#sec-array.prototype.tostring)
-    fn to_string(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn to_string(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let array be ? ToObject(this value).
         let array = to_object(agent, this_value)?;
         // 2. Let func be ? Get(array, "join").
@@ -2654,11 +2743,15 @@ impl ArrayPrototype {
         call_function(agent, func, array.into_value(), None)
     }
 
-    fn unshift(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn unshift(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
-    fn values(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn values(agent: Context<'_, '_, '_>, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         // 1. Let O be ? ToObject(this value).
         let Ok(o) = Object::try_from(this_value) else {
             return Err(agent.throw_exception_with_static_message(
@@ -2670,11 +2763,11 @@ impl ArrayPrototype {
         Ok(ArrayIterator::from_object(agent, o, CollectionIteratorKind::Value).into_value())
     }
 
-    fn with(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn with(_agent: Context<'_, '_, '_>, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         todo!();
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let object_prototype = intrinsics.object_prototype();
         let this = intrinsics.array_prototype();
@@ -2792,7 +2885,7 @@ impl ArrayPrototype {
 ///
 /// > Note: Instead of returning a bool, Nova returns an Option<Object>.
 
-fn is_concat_spreadable(agent: &mut Agent, o: Value) -> JsResult<Option<Object>> {
+fn is_concat_spreadable(agent: Context<'_, '_, '_>, o: Value) -> JsResult<Option<Object>> {
     // 1. If O is not an Object, return false.
     if let Ok(o) = Object::try_from(o) {
         // 2. Let spreadable be ? Get(O, @@isConcatSpreadable).
@@ -2854,7 +2947,7 @@ fn is_concat_spreadable(agent: &mut Agent, o: Value) -> JsResult<Option<Object>>
 /// traversal begins and before being visited are still visited and are either
 /// looked up from the prototype or are undefined.
 fn find_via_predicate(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     o: Object,
     len: i64,
     ascending: bool,
@@ -2869,7 +2962,7 @@ fn find_via_predicate(
         ));
     };
     // 4. For each integer k of indices, do
-    let check = |agent: &mut Agent,
+    let check = |agent: Context<'_, '_, '_>,
                  o: Object,
                  predicate: Function,
                  this_arg: Value,
@@ -2928,7 +3021,7 @@ fn find_via_predicate(
 /// containing a non-negative integer or a throw completion.
 #[allow(clippy::too_many_arguments)]
 fn flatten_into_array(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     target: Object,
     source: Object,
     source_len: usize,
@@ -3078,7 +3171,7 @@ fn flatten_into_array(
 /// > comparator divides the set S into equivalence classes and that these
 /// > equivalence classes are totally ordered.
 fn sort_indexed_properties<const SKIP_HOLES: bool, const TYPED_ARRAY: bool>(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     obj: Object,
     len: usize,
     comparator: Option<Function>,
@@ -3145,7 +3238,7 @@ fn sort_indexed_properties<const SKIP_HOLES: bool, const TYPED_ARRAY: bool>(
 /// comparator (a function object or undefined) and returns either a normal
 /// completion containing a Number or an abrupt completion.
 fn compare_array_elements(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     x: Value,
     y: Value,
     comparator: Option<Function>,

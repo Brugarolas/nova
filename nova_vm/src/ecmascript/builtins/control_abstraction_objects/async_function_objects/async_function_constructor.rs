@@ -12,6 +12,7 @@ use crate::{
         },
         types::{Function, IntoObject, IntoValue, Object, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::IntrinsicConstructorIndexes,
 };
 
@@ -29,7 +30,7 @@ impl BuiltinIntrinsicConstructor for AsyncFunctionConstructor {
 
 impl AsyncFunctionConstructor {
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -57,7 +58,7 @@ impl AsyncFunctionConstructor {
         .into_value())
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let async_function_prototype = intrinsics.async_function_prototype();
         let function_constructor = intrinsics.function();

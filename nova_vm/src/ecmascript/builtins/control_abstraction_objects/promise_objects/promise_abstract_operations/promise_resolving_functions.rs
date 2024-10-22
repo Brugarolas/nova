@@ -12,6 +12,7 @@ use crate::{
             function_create_backing_object, function_internal_define_own_property, function_internal_delete, function_internal_get, function_internal_get_own_property, function_internal_has_property, function_internal_own_property_keys, function_internal_set, Function, FunctionInternalProperties, InternalMethods, InternalSlots, IntoFunction, IntoObject, IntoValue, Object, OrdinaryObject, PropertyDescriptor, PropertyKey, String, Value
         },
     },
+    engine::context::Context,
     heap::{
         indexes::BaseIndex, CreateHeapData, Heap, HeapMarkAndSweep,
     },
@@ -105,11 +106,11 @@ impl InternalSlots for BuiltinPromiseResolvingFunction {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 
-    fn create_backing_object(self, agent: &mut Agent) -> OrdinaryObject {
+    fn create_backing_object(self, agent: Context<'_, '_, '_>) -> OrdinaryObject {
         function_create_backing_object(self, agent)
     }
 }
@@ -117,7 +118,7 @@ impl InternalSlots for BuiltinPromiseResolvingFunction {
 impl InternalMethods for BuiltinPromiseResolvingFunction {
     fn internal_get_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
     ) -> JsResult<Option<PropertyDescriptor>> {
         function_internal_get_own_property(self, agent, property_key)
@@ -125,20 +126,24 @@ impl InternalMethods for BuiltinPromiseResolvingFunction {
 
     fn internal_define_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         property_descriptor: PropertyDescriptor,
     ) -> JsResult<bool> {
         function_internal_define_own_property(self, agent, property_key, property_descriptor)
     }
 
-    fn internal_has_property(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_has_property(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         function_internal_has_property(self, agent, property_key)
     }
 
     fn internal_get(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         receiver: Value,
     ) -> JsResult<Value> {
@@ -147,7 +152,7 @@ impl InternalMethods for BuiltinPromiseResolvingFunction {
 
     fn internal_set(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         value: Value,
         receiver: Value,
@@ -155,17 +160,21 @@ impl InternalMethods for BuiltinPromiseResolvingFunction {
         function_internal_set(self, agent, property_key, value, receiver)
     }
 
-    fn internal_delete(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_delete(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         function_internal_delete(self, agent, property_key)
     }
 
-    fn internal_own_property_keys(self, agent: &mut Agent) -> JsResult<Vec<PropertyKey>> {
+    fn internal_own_property_keys(self, agent: Context<'_, '_, '_>) -> JsResult<Vec<PropertyKey>> {
         function_internal_own_property_keys(self, agent)
     }
 
     fn internal_call(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         args: ArgumentsList,
     ) -> JsResult<Value> {

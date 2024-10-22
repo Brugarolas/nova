@@ -9,6 +9,7 @@ use crate::{
         execution::{Agent, JsResult, RealmIdentifier},
         types::{String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
 };
 
@@ -34,19 +35,23 @@ impl Builtin for WeakSetPrototypeHas {
 }
 
 impl WeakSetPrototype {
-    fn add(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn add(_agent: Context<'_, '_, '_>, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         todo!()
     }
 
-    fn delete(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn delete(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn has(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn has(_agent: Context<'_, '_, '_>, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         todo!()
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let object_prototype = intrinsics.object_prototype();
         let this = intrinsics.weak_set_prototype();

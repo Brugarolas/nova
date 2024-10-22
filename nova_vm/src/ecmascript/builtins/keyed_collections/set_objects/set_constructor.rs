@@ -28,6 +28,7 @@ use crate::{
             BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::{Heap, IntrinsicConstructorIndexes, PrimitiveHeap, WellKnownSymbolIndexes},
 };
 
@@ -54,7 +55,7 @@ impl BuiltinGetter for SetGetSpecies {}
 impl SetConstructor {
     /// ### [24.2.2.1 Set ( \[ iterable \] )](https://tc39.es/ecma262/#sec-set-iterable)
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -183,7 +184,7 @@ impl SetConstructor {
         Ok(this_value)
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let set_prototype = intrinsics.set_prototype();
 

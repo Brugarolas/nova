@@ -9,6 +9,7 @@ use crate::{
         execution::{Agent, JsResult, RealmIdentifier},
         types::{String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
 };
 
@@ -134,16 +135,24 @@ impl Builtin for AtomicsObjectXor {
 }
 
 impl AtomicsObject {
-    fn add(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn add(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
-    fn and(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn and(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
     fn compare_exchange(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -151,7 +160,7 @@ impl AtomicsObject {
     }
 
     fn exchange(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -159,35 +168,55 @@ impl AtomicsObject {
     }
 
     fn is_lock_free(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
         todo!();
     }
 
-    fn load(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn load(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
-    fn or(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn or(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
-    fn store(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn store(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
-    fn sub(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn sub(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
-    fn wait(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn wait(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
     fn wait_async(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -195,18 +224,22 @@ impl AtomicsObject {
     }
 
     fn notify(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
         todo!();
     }
 
-    fn xor(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn xor(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let object_prototype = intrinsics.object_prototype();
         let this = intrinsics.atomics();

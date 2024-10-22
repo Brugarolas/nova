@@ -8,13 +8,14 @@ use crate::{
         execution::{Agent, RealmIdentifier},
         types::BUILTIN_STRING_MEMORY,
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
 };
 
 pub(crate) struct AsyncFunctionPrototype;
 
 impl AsyncFunctionPrototype {
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let function_prototype = intrinsics.function_prototype();
         let this = intrinsics.async_function_prototype();

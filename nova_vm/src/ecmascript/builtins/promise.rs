@@ -11,6 +11,7 @@ use crate::{
             InternalMethods, InternalSlots, IntoObject, IntoValue, Object, OrdinaryObject, Value,
         },
     },
+    engine::context::Context,
     heap::{
         indexes::{BaseIndex, PromiseIndex},
         CreateHeapData, Heap, HeapMarkAndSweep,
@@ -37,7 +38,7 @@ impl Promise {
     }
 
     /// [27.2.4.7.1 PromiseResolve ( C, x )](https://tc39.es/ecma262/#sec-promise-resolve)
-    pub fn resolve(agent: &mut Agent, x: Value) -> Self {
+    pub fn resolve(agent: Context<'_, '_, '_>, x: Value) -> Self {
         // 1. If IsPromise(x) is true, then
         if let Value::Promise(promise) = x {
             // a. Let xConstructor be ? Get(x, "constructor").
@@ -99,7 +100,7 @@ impl InternalSlots for Promise {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 }

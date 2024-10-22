@@ -9,6 +9,7 @@ use crate::{
         execution::{Agent, JsResult, RealmIdentifier},
         types::{String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
 };
 
@@ -25,11 +26,15 @@ impl Builtin for RegExpStringIteratorPrototypeNext {
 }
 
 impl RegExpStringIteratorPrototype {
-    fn next(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn next(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let this = intrinsics.reg_exp_string_iterator_prototype();
         let iterator_prototype = intrinsics.iterator_prototype();

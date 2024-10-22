@@ -11,6 +11,7 @@ use crate::{
             InternalMethods, InternalSlots, IntoObject, IntoValue, Object, OrdinaryObject, Value,
         },
     },
+    engine::context::Context,
     heap::{
         indexes::{BaseIndex, FinalizationRegistryIndex},
         CreateHeapData, Heap, HeapMarkAndSweep,
@@ -79,7 +80,7 @@ impl InternalSlots for FinalizationRegistry {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 }

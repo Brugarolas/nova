@@ -26,6 +26,7 @@ use crate::{
         execution::{agent::ExceptionType, Agent, JsResult, RealmIdentifier},
         types::{IntoValue, Number, PropertyKey, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::{Heap, IntrinsicFunctionIndexes, PrimitiveHeap, WellKnownSymbolIndexes},
 };
 
@@ -87,7 +88,11 @@ impl BuiltinIntrinsic for SetPrototypeValues {
 
 impl SetPrototype {
     /// #### [24.2.4.1 Set.prototype.add ( value )](https://tc39.es/ecma262/#sec-set.prototype.add)
-    fn add(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn add(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let S be the this value.
         // 2. Perform ? RequireInternalSlot(S, [[SetData]]).
         let s = require_set_data_internal_slot(agent, this_value)?;
@@ -143,7 +148,7 @@ impl SetPrototype {
     /// > The existing \[\[SetData]] List is preserved because there may be
     /// > existing Set Iterator objects that are suspended midway through
     /// > iterating over that List.
-    fn clear(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn clear(agent: Context<'_, '_, '_>, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         // 1. Let S be the this value.
         // 2. Perform ? RequireInternalSlot(S, [[SetData]]).
         let s = require_set_data_internal_slot(agent, this_value)?;
@@ -162,7 +167,11 @@ impl SetPrototype {
     /// > The value EMPTY is used as a specification device to indicate that an
     /// > entry has been deleted. Actual implementations may take other actions
     /// > such as physically removing the entry from internal data structures.
-    fn delete(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn delete(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let S be the this value.
         // 2. Perform ? RequireInternalSlot(S, [[SetData]]).
         let s = require_set_data_internal_slot(agent, this_value)?;
@@ -207,7 +216,7 @@ impl SetPrototype {
         }
     }
 
-    fn entries(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn entries(agent: Context<'_, '_, '_>, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         // 1. Let S be the this value.
         // 2. Return ? CreateSetIterator(S, KEY+VALUE).
 
@@ -250,7 +259,11 @@ impl SetPrototype {
     /// > are not visited unless the value is added again before the
     /// > **forEach** call completes. New values added after the call to
     /// > **forEach** begins are visited.
-    fn for_each(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn for_each(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let callback_fn = arguments.get(0);
         let this_arg = arguments.get(1);
         // 1. Let S be the this value.
@@ -295,7 +308,11 @@ impl SetPrototype {
     }
 
     /// ### [24.2.4.8 Set.prototype.has ( value )](https://tc39.es/ecma262/#sec-set.prototype.has)
-    fn has(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn has(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let S be the this value.
         // 2. Perform ? RequireInternalSlot(S, [[SetData]]).
         let s = require_set_data_internal_slot(agent, this_value)?;
@@ -337,7 +354,11 @@ impl SetPrototype {
     ///
     /// Set.prototype.size is an accessor property whose set accessor function
     /// is undefined.
-    fn get_size(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_size(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let S be the this value.
         // 2. Perform ? RequireInternalSlot(S, [[SetData]]).
         let s = require_set_data_internal_slot(agent, this_value)?;
@@ -347,7 +368,7 @@ impl SetPrototype {
         Ok(Number::from(size).into_value())
     }
 
-    fn values(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn values(agent: Context<'_, '_, '_>, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         // 1. Let S be the this value.
         // 2. Return ? CreateSetIterator(S, VALUE).
 
@@ -357,7 +378,7 @@ impl SetPrototype {
         Ok(SetIterator::from_set(agent, s, CollectionIteratorKind::Value).into_value())
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let object_prototype = intrinsics.object_prototype();
         let this = intrinsics.set_prototype();
@@ -405,7 +426,7 @@ impl SetPrototype {
 }
 
 #[inline(always)]
-fn require_set_data_internal_slot(agent: &mut Agent, value: Value) -> JsResult<Set> {
+fn require_set_data_internal_slot(agent: Context<'_, '_, '_>, value: Value) -> JsResult<Set> {
     match value {
         Value::Set(map) => Ok(map),
         _ => Err(agent

@@ -16,6 +16,7 @@ use crate::{
             BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::{IntrinsicConstructorIndexes, WellKnownSymbolIndexes},
 };
 
@@ -55,7 +56,7 @@ impl BuiltinGetter for ArrayBufferGetSpecies {}
 impl ArrayBufferConstructor {
     // ### [25.1.4.1 ArrayBuffer ( length \[ , options \] )](https://tc39.es/ecma262/#sec-arraybuffer-constructor)
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -87,7 +88,7 @@ impl ArrayBufferConstructor {
 
     /// ### [25.1.5.1 ArrayBuffer.isView ( arg )](https://tc39.es/ecma262/#sec-arraybuffer.isview)
     fn is_view(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -124,7 +125,7 @@ impl ArrayBufferConstructor {
     /// > `ArrayBuffer.prototype.slice ( start, end )` method by redefining its
     /// > `%Symbol.species%` property.
     fn species(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -133,7 +134,7 @@ impl ArrayBufferConstructor {
         Ok(this_value)
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let array_buffer_prototype = intrinsics.array_buffer_prototype();
 
@@ -153,7 +154,7 @@ impl ArrayBufferConstructor {
 /// completion containing either a non-negative integer or empty, or a throw
 /// completion.
 fn get_array_buffer_max_byte_length_option(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     options: Value,
 ) -> JsResult<Option<u64>> {
     // 1. If options is not an Object, return empty.

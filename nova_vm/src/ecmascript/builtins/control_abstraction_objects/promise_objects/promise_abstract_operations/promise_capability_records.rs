@@ -17,6 +17,7 @@ use crate::{
         },
         types::{Function, IntoValue, Object, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::{CompactionLists, CreateHeapData, HeapMarkAndSweep, WorkQueues},
 };
 
@@ -47,7 +48,7 @@ impl PromiseCapability {
     /// [27.2.1.5 NewPromiseCapability ( C )](https://tc39.es/ecma262/#sec-newpromisecapability)
     /// NOTE: Our implementation doesn't take C as a parameter, since we don't
     /// yet support promise subclassing.
-    pub fn new(agent: &mut Agent) -> Self {
+    pub fn new(agent: Context<'_, '_, '_>) -> Self {
         Self::from_promise(agent.heap.create(PromiseHeapData::default()), true)
     }
 
@@ -62,7 +63,7 @@ impl PromiseCapability {
         self.promise
     }
 
-    fn is_already_resolved(self, agent: &mut Agent) -> bool {
+    fn is_already_resolved(self, agent: Context<'_, '_, '_>) -> bool {
         // If `self.must_be_unresolved` is true, then `alreadyResolved`
         // corresponds with the `is_resolved` flag in PromiseState::Pending.
         // Otherwise, it corresponds to `promise_state` not being Pending.
@@ -79,7 +80,7 @@ impl PromiseCapability {
     }
 
     /// [27.2.1.4 FulfillPromise ( promise, value )](https://tc39.es/ecma262/#sec-fulfillpromise)
-    fn internal_fulfill(self, agent: &mut Agent, value: Value) {
+    fn internal_fulfill(self, agent: Context<'_, '_, '_>, value: Value) {
         // 1. Assert: The value of promise.[[PromiseState]] is pending.
         // 2. Let reactions be promise.[[PromiseFulfillReactions]].
         let promise_state = &mut agent[self.promise].promise_state;
@@ -103,7 +104,7 @@ impl PromiseCapability {
     }
 
     /// [27.2.1.7 RejectPromise ( promise, reason )](https://tc39.es/ecma262/#sec-rejectpromise)
-    fn internal_reject(self, agent: &mut Agent, reason: Value) {
+    fn internal_reject(self, agent: Context<'_, '_, '_>, reason: Value) {
         // 1. Assert: The value of promise.[[PromiseState]] is pending.
         // 2. Let reactions be promise.[[PromiseRejectReactions]].
         let promise_state = &mut agent[self.promise].promise_state;
@@ -136,7 +137,7 @@ impl PromiseCapability {
     }
 
     /// [27.2.1.3.2 Promise Resolve Functions](https://tc39.es/ecma262/#sec-promise-resolve-functions)
-    pub fn resolve(self, agent: &mut Agent, resolution: Value) {
+    pub fn resolve(self, agent: Context<'_, '_, '_>, resolution: Value) {
         // 1. Let F be the active function object.
         // 2. Assert: F has a [[Promise]] internal slot whose value is an Object.
         // 3. Let promise be F.[[Promise]].
@@ -205,7 +206,7 @@ impl PromiseCapability {
     }
 
     /// [27.2.1.3.1 Promise Reject Functions](https://tc39.es/ecma262/#sec-promise-reject-functions)
-    pub fn reject(self, agent: &mut Agent, reason: Value) {
+    pub fn reject(self, agent: Context<'_, '_, '_>, reason: Value) {
         // 1. Let F be the active function object.
         // 2. Assert: F has a [[Promise]] internal slot whose value is an Object.
         // 3. Let promise be F.[[Promise]].
@@ -264,7 +265,7 @@ impl HeapMarkAndSweep for PromiseCapability {
 /// ```
 #[inline(always)]
 pub(crate) fn if_abrupt_reject_promise<T>(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     value: JsResult<T>,
     capability: PromiseCapability,
 ) -> JsResult<T> {

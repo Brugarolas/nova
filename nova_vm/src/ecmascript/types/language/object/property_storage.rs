@@ -9,6 +9,7 @@ use crate::{
         execution::{Agent, Realm},
         types::{PropertyDescriptor, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::element_array::ElementDescriptor,
     Heap,
 };
@@ -31,7 +32,7 @@ impl PropertyStorage {
         self.into_object().into_value()
     }
 
-    pub fn has(self, agent: &mut Agent, key: PropertyKey) -> bool {
+    pub fn has(self, agent: Context<'_, '_, '_>, key: PropertyKey) -> bool {
         let object = self.into_value();
 
         match object {
@@ -69,7 +70,7 @@ impl PropertyStorage {
         }
     }
 
-    pub fn get(self, agent: &mut Agent, key: PropertyKey) -> Option<PropertyDescriptor> {
+    pub fn get(self, agent: Context<'_, '_, '_>, key: PropertyKey) -> Option<PropertyDescriptor> {
         match self.0 {
             Object::Object(object) => {
                 let ObjectHeapData { keys, values, .. } = agent[object];
@@ -92,7 +93,12 @@ impl PropertyStorage {
         }
     }
 
-    pub fn set(self, agent: &mut Agent, property_key: PropertyKey, descriptor: PropertyDescriptor) {
+    pub fn set(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+        descriptor: PropertyDescriptor,
+    ) {
         match self.0 {
             Object::Object(object) => {
                 let ObjectHeapData { keys, values, .. } = agent[object];
@@ -139,7 +145,7 @@ impl PropertyStorage {
         }
     }
 
-    pub fn remove(self, agent: &mut Agent, property_key: PropertyKey) {
+    pub fn remove(self, agent: Context<'_, '_, '_>, property_key: PropertyKey) {
         match self.0 {
             Object::Object(object) => {
                 let property_key = property_key.into_value();

@@ -2,14 +2,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::ecmascript::{
-    builders::ordinary_object_builder::OrdinaryObjectBuilder,
-    builtins::{
-        primitive_objects::{PrimitiveObjectData, PrimitiveObjectHeapData},
-        ArgumentsList, Builtin,
+use crate::{
+    ecmascript::{
+        builders::ordinary_object_builder::OrdinaryObjectBuilder,
+        builtins::{
+            primitive_objects::{PrimitiveObjectData, PrimitiveObjectHeapData},
+            ArgumentsList, Builtin,
+        },
+        execution::{agent::ExceptionType, Agent, JsResult, RealmIdentifier},
+        types::{String, Value, BUILTIN_STRING_MEMORY},
     },
-    execution::{agent::ExceptionType, Agent, JsResult, RealmIdentifier},
-    types::{String, Value, BUILTIN_STRING_MEMORY},
+    engine::context::Context,
 };
 
 pub(crate) struct BooleanPrototype;
@@ -35,7 +38,11 @@ impl Builtin for BooleanPrototypeValueOf {
 }
 
 impl BooleanPrototype {
-    fn to_string(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn to_string(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         let b = this_boolean_value(agent, this_value)?;
         if b {
             Ok(BUILTIN_STRING_MEMORY.r#true.into())
@@ -44,11 +51,15 @@ impl BooleanPrototype {
         }
     }
 
-    fn value_of(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn value_of(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         this_boolean_value(agent, this_value).map(|result| result.into())
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let object_prototype = intrinsics.object_prototype();
         let this = intrinsics.boolean_prototype();
@@ -81,7 +92,7 @@ impl BooleanPrototype {
 /// The abstract operation ThisBooleanValue takes argument value (an
 /// ECMAScript language value) and returns either a normal completion
 /// containing a Boolean or a throw completion.
-fn this_boolean_value(agent: &mut Agent, value: Value) -> JsResult<bool> {
+fn this_boolean_value(agent: Context<'_, '_, '_>, value: Value) -> JsResult<bool> {
     // 1. If value is a Boolean, return value.
     if let Value::Boolean(value) = value {
         return Ok(value);

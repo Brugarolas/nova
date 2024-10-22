@@ -9,6 +9,7 @@ use crate::{
         execution::{agent::ExceptionType, Agent, JsResult, RealmIdentifier},
         types::{BigInt, IntoValue, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
 };
 
@@ -46,7 +47,7 @@ impl Builtin for BigIntPrototypeValueOf {
 
 impl BigIntPrototype {
     fn to_locale_string(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -54,7 +55,7 @@ impl BigIntPrototype {
     }
 
     fn to_string(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -68,11 +69,15 @@ impl BigIntPrototype {
         }
     }
 
-    fn value_of(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn value_of(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         this_big_int_value(agent, this_value).map(|result| result.into_value())
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let object_prototype = intrinsics.object_prototype();
         let this = intrinsics.big_int_prototype();
@@ -102,7 +107,7 @@ impl BigIntPrototype {
 /// The abstract operation ThisBigIntValue takes argument value (an ECMAScript
 /// language value) and returns either a normal completion containing a BigInt
 /// or a throw completion.
-fn this_big_int_value(agent: &mut Agent, value: Value) -> JsResult<BigInt> {
+fn this_big_int_value(agent: Context<'_, '_, '_>, value: Value) -> JsResult<BigInt> {
     match value {
         // 1. If value is a BigInt, return value.
         Value::BigInt(value) => Ok(value.into()),

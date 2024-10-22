@@ -10,6 +10,7 @@ use crate::{
         execution::{agent::ExceptionType, Agent, JsResult},
         types::{Object, String, Value},
     },
+    engine::context::Context,
     heap::{CompactionLists, HeapMarkAndSweep, WorkQueues},
 };
 
@@ -205,7 +206,12 @@ impl DeclarativeEnvironmentIndex {
     /// binding for the name N that is uninitialized. A binding must not
     /// already exist in this Environment Record for N. If D is true, the new
     /// binding is marked as being subject to deletion.
-    pub fn create_mutable_binding(self, agent: &mut Agent, name: String, is_deletable: bool) {
+    pub fn create_mutable_binding(
+        self,
+        agent: Context<'_, '_, '_>,
+        name: String,
+        is_deletable: bool,
+    ) {
         let env_rec = &mut agent[self];
         // Delegate to heap data record method.
         env_rec.create_mutable_binding(name, is_deletable);
@@ -219,7 +225,12 @@ impl DeclarativeEnvironmentIndex {
     /// immutable binding for the name N that is uninitialized. A binding must
     /// not already exist in this Environment Record for N. If S is true, the
     /// new binding is marked as a strict binding.
-    pub(crate) fn create_immutable_binding(self, agent: &mut Agent, name: String, is_strict: bool) {
+    pub(crate) fn create_immutable_binding(
+        self,
+        agent: Context<'_, '_, '_>,
+        name: String,
+        is_strict: bool,
+    ) {
         let env_rec = &mut agent[self];
         // Delegate to heap data record method.
         env_rec.create_immutable_binding(name, is_strict);
@@ -233,7 +244,7 @@ impl DeclarativeEnvironmentIndex {
     /// is used to set the bound value of the current binding of the identifier
     /// whose name is N to the value V. An uninitialized binding for N must
     /// already exist.
-    pub(crate) fn initialize_binding(self, agent: &mut Agent, name: String, value: Value) {
+    pub(crate) fn initialize_binding(self, agent: Context<'_, '_, '_>, name: String, value: Value) {
         let env_rec = &mut agent[self];
         // Delegate to heap data record method.
         env_rec.initialize_binding(name, value)
@@ -251,7 +262,7 @@ impl DeclarativeEnvironmentIndex {
     /// thrown if S is true.
     pub(crate) fn set_mutable_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         value: Value,
         mut is_strict: bool,
@@ -324,7 +335,7 @@ impl DeclarativeEnvironmentIndex {
     /// is thrown, regardless of the value of S.
     pub(crate) fn get_binding_value(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         is_strict: bool,
     ) -> JsResult<Value> {
@@ -347,7 +358,7 @@ impl DeclarativeEnvironmentIndex {
     /// envRec takes argument N (a String) and returns a normal completion
     /// containing a Boolean. It can only delete bindings that have been
     /// explicitly designated as being subject to deletion.
-    pub(crate) fn delete_binding(self, agent: &mut Agent, name: String) -> bool {
+    pub(crate) fn delete_binding(self, agent: Context<'_, '_, '_>, name: String) -> bool {
         let env_rec = &mut agent[self];
         // Delegate to heap data record method.
         env_rec.delete_binding(name)
@@ -403,7 +414,7 @@ impl HeapMarkAndSweep for DeclarativeEnvironmentIndex {
 /// Environment Record or null) and returns a Declarative Environment
 /// Record.
 pub(crate) fn new_declarative_environment(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     outer_env: OuterEnv,
 ) -> DeclarativeEnvironmentIndex {
     // 1. Let env be a new Declarative Environment Record containing no bindings.

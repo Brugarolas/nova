@@ -12,6 +12,7 @@ use crate::{
             bigint::BigInt, Function, InternalMethods, IntoValue, Number, Object, String, Value,
         },
     },
+    engine::context::Context,
     heap::PrimitiveHeapIndexable,
 };
 
@@ -24,7 +25,10 @@ use super::type_conversion::{string_to_big_int, to_number, to_primitive, Preferr
 /// containing an ECMAScript language value or a throw completion. It throws an
 /// error if argument is a value that cannot be converted to an Object using
 /// ToObject. It is defined by [Table 14](https://tc39.es/ecma262/#table-requireobjectcoercible-results):
-pub(crate) fn require_object_coercible(agent: &mut Agent, argument: Value) -> JsResult<Value> {
+pub(crate) fn require_object_coercible(
+    agent: Context<'_, '_, '_>,
+    argument: Value,
+) -> JsResult<Value> {
     if argument.is_undefined() || argument.is_null() {
         Err(agent.throw_exception_with_static_message(
             ExceptionType::TypeError,
@@ -81,7 +85,7 @@ pub(crate) fn is_callable(argument: impl TryInto<Function>) -> Option<Function> 
 /// > `Option<Callable>` or `Option<Constructable>` once callable proxies are
 /// > supported.
 pub(crate) fn is_constructor(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     constructor: impl TryInto<Function>,
 ) -> Option<Function> {
     // 1. If argument is not an Object, return false.
@@ -104,7 +108,7 @@ pub(crate) fn is_constructor(
 /// returns either a normal completion containing a Boolean or a throw
 /// completion. It is used to determine whether additional properties can be
 /// added to O.
-pub(crate) fn is_extensible(agent: &mut Agent, o: Object) -> JsResult<bool> {
+pub(crate) fn is_extensible(agent: Context<'_, '_, '_>, o: Object) -> JsResult<bool> {
     // 1. Return ? O.[[IsExtensible]]().
     o.internal_is_extensible(agent)
 }
@@ -121,7 +125,10 @@ pub(crate) fn is_same_type<V1: Copy + Into<Value>, V2: Copy + Into<Value>>(x: V1
 }
 
 /// ### [7.2.6 IsIntegralNumber ( argument )](https://tc39.es/ecma262/#sec-isintegralnumber)
-pub(crate) fn is_integral_number(agent: &mut Agent, argument: impl Copy + Into<Value>) -> bool {
+pub(crate) fn is_integral_number(
+    agent: Context<'_, '_, '_>,
+    argument: impl Copy + Into<Value>,
+) -> bool {
     let argument = argument.into();
 
     // OPTIMIZATION: If the number is a small integer, then know that it must be
@@ -256,7 +263,7 @@ pub(crate) fn same_value_non_number<T: Copy + Into<Value>>(
 /// corresponding expression. If LeftFirst is false, the reverse is the case
 /// and operations must be performed upon y before x.
 pub(crate) fn is_less_than<const LEFT_FIRST: bool>(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     x: impl Into<Value> + Copy,
     y: impl Into<Value> + Copy,
 ) -> JsResult<Option<bool>> {
@@ -376,7 +383,7 @@ pub(crate) fn is_less_than<const LEFT_FIRST: bool>(
 /// normal completion containing a Boolean or a throw completion. It provides
 /// the semantics for the == operator.
 pub(crate) fn is_loosely_equal(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     x: impl Into<Value> + Copy,
     y: impl Into<Value> + Copy,
 ) -> JsResult<bool> {

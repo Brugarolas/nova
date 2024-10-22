@@ -11,6 +11,7 @@ use crate::{
         execution::{agent::ExceptionType, Agent, JsResult},
         types::{Function, InternalMethods, IntoFunction, IntoValue, Object, String, Value},
     },
+    engine::context::Context,
     heap::{CompactionLists, HeapMarkAndSweep, WorkQueues},
 };
 
@@ -104,7 +105,7 @@ impl HeapMarkAndSweep for FunctionEnvironment {
 /// ECMAScript function object) and newTarget (an Object or undefined) and
 /// returns a Function Environment Record.
 pub(crate) fn new_function_environment(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     f: ECMAScriptFunction,
     new_target: Option<Object>,
 ) -> FunctionEnvironmentIndex {
@@ -150,7 +151,7 @@ pub(crate) fn new_function_environment(
 /// which is used as both the this value and the \[\[FunctionObject]] of the
 /// new function environment.
 pub(crate) fn new_class_static_element_environment(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     class_constructor: Function,
 ) -> FunctionEnvironmentIndex {
     // 1. Let env be a new Function Environment Record containing no bindings.
@@ -184,7 +185,7 @@ pub(crate) fn new_class_static_element_environment(
 }
 
 pub(crate) fn new_class_field_initializer_environment(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     class_constructor: Function,
     class_instance: Object,
     outer_env: EnvironmentIndex,
@@ -217,7 +218,7 @@ impl FunctionEnvironmentIndex {
     /// The GetThisBinding concrete method of a Function Environment Record
     /// envRec takes no arguments and returns either a normal completion
     /// containing an ECMAScript language value or a throw completion.
-    pub(crate) fn get_this_binding(self, agent: &mut Agent) -> JsResult<Value> {
+    pub(crate) fn get_this_binding(self, agent: Context<'_, '_, '_>) -> JsResult<Value> {
         // 1. Assert: envRec.[[ThisBindingStatus]] is not lexical.
         // 2. If envRec.[[ThisBindingStatus]] is uninitialized, throw a ReferenceError exception.
         // 3. Return envRec.[[ThisValue]].
@@ -240,7 +241,7 @@ impl FunctionEnvironmentIndex {
     /// ### [9.1.1.1.2 CreateMutableBinding ( N, D )](https://tc39.es/ecma262/#sec-declarative-environment-records-createmutablebinding-n-d)
     pub(crate) fn create_mutable_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         is_deletable: bool,
     ) {
@@ -250,14 +251,19 @@ impl FunctionEnvironmentIndex {
     }
 
     /// ### [9.1.1.1.3 CreateImmutableBinding ( N, S )](https://tc39.es/ecma262/#sec-declarative-environment-records-createimmutablebinding-n-s)
-    pub(crate) fn create_immutable_binding(self, agent: &mut Agent, name: String, is_strict: bool) {
+    pub(crate) fn create_immutable_binding(
+        self,
+        agent: Context<'_, '_, '_>,
+        name: String,
+        is_strict: bool,
+    ) {
         agent[self]
             .declarative_environment
             .create_immutable_binding(agent, name, is_strict)
     }
 
     /// ### [9.1.1.1.4 InitializeBinding ( N, V )](https://tc39.es/ecma262/#sec-declarative-environment-records-initializebinding-n-v)
-    pub(crate) fn initialize_binding(self, agent: &mut Agent, name: String, value: Value) {
+    pub(crate) fn initialize_binding(self, agent: Context<'_, '_, '_>, name: String, value: Value) {
         agent[self]
             .declarative_environment
             .initialize_binding(agent, name, value)
@@ -266,7 +272,7 @@ impl FunctionEnvironmentIndex {
     /// ### [9.1.1.1.5 SetMutableBinding ( N, V, S )](https://tc39.es/ecma262/#sec-declarative-environment-records-setmutablebinding-n-v-s)
     pub(crate) fn set_mutable_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         value: Value,
         mut is_strict: bool,
@@ -335,7 +341,7 @@ impl FunctionEnvironmentIndex {
     /// ### [9.1.1.1.6 GetBindingValue ( N, S )](https://tc39.es/ecma262/#sec-declarative-environment-records-getbindingvalue-n-s)
     pub(crate) fn get_binding_value(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         is_strict: bool,
     ) -> JsResult<Value> {
@@ -345,7 +351,7 @@ impl FunctionEnvironmentIndex {
     }
 
     /// ### [9.1.1.1.7 DeleteBinding ( N )](https://tc39.es/ecma262/#sec-declarative-environment-records-deletebinding-n)
-    pub(crate) fn delete_binding(self, agent: &mut Agent, name: String) -> bool {
+    pub(crate) fn delete_binding(self, agent: Context<'_, '_, '_>, name: String) -> bool {
         agent[self]
             .declarative_environment
             .delete_binding(agent, name)
@@ -363,7 +369,11 @@ impl FunctionEnvironmentIndex {
     /// envRec takes argument V (an ECMAScript language value) and returns
     /// either a normal completion containing an ECMAScript language value or a
     /// throw completion.
-    pub(crate) fn bind_this_value(self, agent: &mut Agent, value: Value) -> JsResult<Value> {
+    pub(crate) fn bind_this_value(
+        self,
+        agent: Context<'_, '_, '_>,
+        value: Value,
+    ) -> JsResult<Value> {
         let env_rec = &mut agent[self];
         // 1. Assert: envRec.[[ThisBindingStatus]] is not LEXICAL.
         debug_assert!(env_rec.this_binding_status != ThisBindingStatus::Lexical);
@@ -429,7 +439,7 @@ impl FunctionEnvironmentIndex {
     /// The GetSuperBase concrete method of a Function Environment Record
     /// envRec takes no arguments and returns either a normal completion
     /// containing either an Object, null, or undefined, or a throw completion.
-    pub(crate) fn get_super_base(self, agent: &mut Agent) -> JsResult<Value> {
+    pub(crate) fn get_super_base(self, agent: Context<'_, '_, '_>) -> JsResult<Value> {
         let env_rec: &FunctionEnvironment = &agent[self];
 
         // 1. Let home be envRec.[[FunctionObject]].[[HomeObject]].

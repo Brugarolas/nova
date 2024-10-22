@@ -2,27 +2,19 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::ecmascript::abstract_operations::type_conversion::to_string;
-use crate::ecmascript::builders::builtin_function_builder::BuiltinFunctionBuilder;
-use crate::ecmascript::builtins::ArgumentsList;
-use crate::ecmascript::builtins::Behaviour;
-use crate::ecmascript::builtins::Builtin;
-use crate::ecmascript::builtins::BuiltinIntrinsicConstructor;
-use crate::ecmascript::execution::agent::ExceptionType;
-use crate::ecmascript::execution::Agent;
-use crate::ecmascript::execution::JsResult;
-use crate::ecmascript::execution::RealmIdentifier;
-use crate::ecmascript::types::IntoObject;
-
-use crate::ecmascript::types::IntoValue;
-use crate::ecmascript::types::Object;
-use crate::ecmascript::types::String;
-use crate::ecmascript::types::SymbolHeapData;
-use crate::ecmascript::types::Value;
-use crate::ecmascript::types::BUILTIN_STRING_MEMORY;
-use crate::heap::CreateHeapData;
-use crate::heap::IntrinsicConstructorIndexes;
-use crate::heap::WellKnownSymbolIndexes;
+use crate::{
+    ecmascript::{
+        abstract_operations::type_conversion::to_string,
+        builders::builtin_function_builder::BuiltinFunctionBuilder,
+        builtins::{ArgumentsList, Behaviour, Builtin, BuiltinIntrinsicConstructor},
+        execution::{agent::ExceptionType, Agent, JsResult, RealmIdentifier},
+        types::{
+            IntoObject, IntoValue, Object, String, SymbolHeapData, Value, BUILTIN_STRING_MEMORY,
+        },
+    },
+    engine::context::Context,
+    heap::{CreateHeapData, IntrinsicConstructorIndexes, WellKnownSymbolIndexes},
+};
 
 pub(crate) struct SymbolConstructor;
 
@@ -59,7 +51,7 @@ impl Builtin for SymbolKeyFor {
 
 impl SymbolConstructor {
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -85,19 +77,23 @@ impl SymbolConstructor {
             .into_value())
     }
 
-    fn r#for(_agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
-        Ok(arguments.get(0))
-    }
-
-    fn key_for(
-        _agent: &mut Agent,
+    fn r#for(
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
         Ok(arguments.get(0))
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    fn key_for(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
+        Ok(arguments.get(0))
+    }
+
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let symbol_prototype = intrinsics.symbol_prototype();
 

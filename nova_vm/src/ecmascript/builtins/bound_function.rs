@@ -20,6 +20,7 @@ use crate::{
             OrdinaryObject, PropertyDescriptor, PropertyKey, String, Value,
         },
     },
+    engine::context::Context,
     heap::{
         indexes::BoundFunctionIndex, CompactionLists, CreateHeapData, Heap, HeapMarkAndSweep,
         WorkQueues,
@@ -74,7 +75,7 @@ impl IntoFunction for BoundFunction {
 /// normal completion containing a function object or a throw completion. It is
 /// used to specify the creation of new bound function exotic objects.
 pub(crate) fn bound_function_create(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     target_function: Function,
     bound_this: Value,
     bound_args: &[Value],
@@ -132,11 +133,11 @@ impl InternalSlots for BoundFunction {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 
-    fn create_backing_object(self, agent: &mut Agent) -> OrdinaryObject {
+    fn create_backing_object(self, agent: Context<'_, '_, '_>) -> OrdinaryObject {
         function_create_backing_object(self, agent)
     }
 }
@@ -144,7 +145,7 @@ impl InternalSlots for BoundFunction {
 impl InternalMethods for BoundFunction {
     fn internal_get_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
     ) -> JsResult<Option<PropertyDescriptor>> {
         function_internal_get_own_property(self, agent, property_key)
@@ -152,20 +153,24 @@ impl InternalMethods for BoundFunction {
 
     fn internal_define_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         property_descriptor: PropertyDescriptor,
     ) -> JsResult<bool> {
         function_internal_define_own_property(self, agent, property_key, property_descriptor)
     }
 
-    fn internal_has_property(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_has_property(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         function_internal_has_property(self, agent, property_key)
     }
 
     fn internal_get(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         receiver: Value,
     ) -> JsResult<Value> {
@@ -174,7 +179,7 @@ impl InternalMethods for BoundFunction {
 
     fn internal_set(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         value: Value,
         receiver: Value,
@@ -182,11 +187,15 @@ impl InternalMethods for BoundFunction {
         function_internal_set(self, agent, property_key, value, receiver)
     }
 
-    fn internal_delete(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_delete(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         function_internal_delete(self, agent, property_key)
     }
 
-    fn internal_own_property_keys(self, agent: &mut Agent) -> JsResult<Vec<PropertyKey>> {
+    fn internal_own_property_keys(self, agent: Context<'_, '_, '_>) -> JsResult<Vec<PropertyKey>> {
         function_internal_own_property_keys(self, agent)
     }
 
@@ -199,7 +208,7 @@ impl InternalMethods for BoundFunction {
     /// completion.
     fn internal_call(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _: Value,
         arguments_list: ArgumentsList,
     ) -> JsResult<Value> {
@@ -237,7 +246,7 @@ impl InternalMethods for BoundFunction {
     /// containing an Object or a throw completion.
     fn internal_construct(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         arguments_list: ArgumentsList,
         new_target: Function,
     ) -> JsResult<Object> {

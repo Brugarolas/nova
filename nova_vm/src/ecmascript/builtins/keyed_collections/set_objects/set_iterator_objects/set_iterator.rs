@@ -15,6 +15,7 @@ use crate::{
             InternalMethods, InternalSlots, IntoObject, IntoValue, Object, OrdinaryObject, Value,
         },
     },
+    engine::context::Context,
     heap::{
         indexes::SetIteratorIndex, CompactionLists, CreateHeapData, Heap, HeapMarkAndSweep,
         WorkQueues,
@@ -35,7 +36,11 @@ impl SetIterator {
         self.0.into_index()
     }
 
-    pub(crate) fn from_set(agent: &mut Agent, set: Set, kind: CollectionIteratorKind) -> Self {
+    pub(crate) fn from_set(
+        agent: Context<'_, '_, '_>,
+        set: Set,
+        kind: CollectionIteratorKind,
+    ) -> Self {
         agent.heap.create(SetIteratorHeapData {
             object_index: None,
             set: Some(set),
@@ -104,7 +109,7 @@ impl InternalSlots for SetIterator {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 }

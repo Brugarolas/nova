@@ -23,6 +23,7 @@ use crate::{
             BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::{CreateHeapData, IntrinsicConstructorIndexes, ObjectEntry, WellKnownSymbolIndexes},
 };
 
@@ -101,7 +102,7 @@ impl BuiltinGetter for PromiseGetSpecies {}
 
 impl PromiseConstructor {
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         args: ArgumentsList,
         new_target: Option<Object>,
@@ -178,25 +179,41 @@ impl PromiseConstructor {
         Ok(promise.into_value())
     }
 
-    fn all(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
-        todo!()
-    }
-
-    fn all_settled(
-        _agent: &mut Agent,
+    fn all(
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
         todo!()
     }
-    fn any(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+
+    fn all_settled(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
-    fn race(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn any(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
+        todo!()
+    }
+    fn race(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn reject(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn reject(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // We currently don't support Promise subclassing.
         assert_eq!(
             this_value,
@@ -219,7 +236,11 @@ impl PromiseConstructor {
         Ok(promise.into_value())
     }
 
-    fn resolve(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn resolve(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // We currently don't support Promise subclassing.
         assert_eq!(
             this_value,
@@ -231,7 +252,11 @@ impl PromiseConstructor {
     }
 
     /// Defined in the [`Promise.try` proposal](https://tc39.es/proposal-promise-try)
-    fn r#try(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn r#try(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let C be the this value.
         // 2. If C is not an Object, throw a TypeError exception.
         if is_constructor(agent, this_value).is_none() {
@@ -278,7 +303,7 @@ impl PromiseConstructor {
     }
 
     fn with_resolvers(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -349,7 +374,7 @@ impl PromiseConstructor {
         Ok(this_value)
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let promise_prototype = intrinsics.promise_prototype();
 

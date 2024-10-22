@@ -15,6 +15,7 @@ use crate::{
             BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::{CompactionLists, HeapMarkAndSweep, WorkQueues},
 };
 pub(crate) use intrinsics::Intrinsics;
@@ -209,7 +210,7 @@ impl HeapMarkAndSweep for Realm {
 ///
 /// The abstract operation CreateRealm takes no arguments and returns a Realm
 /// Record.
-pub fn create_realm(agent: &mut Agent) -> RealmIdentifier {
+pub fn create_realm(agent: Context<'_, '_, '_>) -> RealmIdentifier {
     // 1. Let realmRec be a new Realm Record.
     let realm_rec = Realm {
         // 2. Perform CreateIntrinsics(realmRec).
@@ -242,7 +243,7 @@ pub fn create_realm(agent: &mut Agent) -> RealmIdentifier {
 ///
 /// The abstract operation CreateIntrinsics takes argument realmRec (a Realm
 /// Record) and returns UNUSED.
-pub(crate) fn create_intrinsics(agent: &mut Agent) -> Intrinsics {
+pub(crate) fn create_intrinsics(agent: Context<'_, '_, '_>) -> Intrinsics {
     // TODO: Follow the specification.
     // 1. Set realmRec.[[Intrinsics]] to a new Record.
     // 2. Set fields of realmRec.[[Intrinsics]] with the values listed in
@@ -272,7 +273,7 @@ pub(crate) fn create_intrinsics(agent: &mut Agent) -> Intrinsics {
 
 /// ### [9.3.3 SetRealmGlobalObject ( realmRec, globalObj, thisValue )](https://tc39.es/ecma262/#sec-setrealmglobalobject)
 pub(crate) fn set_realm_global_object(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     realm_id: RealmIdentifier,
     global_object: Option<Object>,
     this_value: Option<Object>,
@@ -318,7 +319,7 @@ pub(crate) fn set_realm_global_object(
 /// Realm Record) and returns either a normal completion containing an Object
 /// or a throw completion.
 pub(crate) fn set_default_global_bindings(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     realm_id: RealmIdentifier,
 ) -> JsResult<Object> {
     // 1. Let global be realmRec.[[GlobalObject]].
@@ -1061,7 +1062,7 @@ pub(crate) fn set_default_global_bindings(
 
 /// ### [9.6 InitializeHostDefinedRealm ( )](https://tc39.es/ecma262/#sec-initializehostdefinedrealm)
 pub(crate) fn initialize_host_defined_realm(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     create_global_object: Option<impl FnOnce(&mut Agent) -> Object>,
     create_global_this_value: Option<impl FnOnce(&mut Agent) -> Object>,
     initialize_global_object: Option<impl FnOnce(&mut Agent, Object)>,
@@ -1113,7 +1114,7 @@ pub(crate) fn initialize_host_defined_realm(
     // 12. Return UNUSED.
 }
 
-pub(crate) fn initialize_default_realm(agent: &mut Agent) {
+pub(crate) fn initialize_default_realm(agent: Context<'_, '_, '_>) {
     let create_global_object: Option<fn(&mut Agent) -> Object> = None;
     let create_global_this_value: Option<fn(&mut Agent) -> Object> = None;
     let initialize_global_object: Option<fn(&mut Agent, Object)> = None;

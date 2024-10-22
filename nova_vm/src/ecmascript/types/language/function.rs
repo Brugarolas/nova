@@ -197,7 +197,7 @@ impl InternalSlots for Function {
         unreachable!("Function should not try to create backing object");
     }
 
-    fn set_backing_object(self, _agent: &mut Agent, _backing_object: OrdinaryObject) {
+    fn set_backing_object(self, _agent: Context<'_, '_, '_>, _backing_object: OrdinaryObject) {
         unreachable!("Function should not try to set backing object");
     }
 
@@ -215,7 +215,7 @@ impl InternalSlots for Function {
         }
     }
 
-    fn internal_set_extensible(self, agent: &mut Agent, value: bool) {
+    fn internal_set_extensible(self, agent: Context<'_, '_, '_>, value: bool) {
         if let Some(object_index) = self.get_backing_object(agent) {
             object_index.internal_set_extensible(agent, value)
         } else if !value {
@@ -224,7 +224,7 @@ impl InternalSlots for Function {
         }
     }
 
-    fn internal_set_prototype(self, agent: &mut Agent, prototype: Option<Object>) {
+    fn internal_set_prototype(self, agent: Context<'_, '_, '_>, prototype: Option<Object>) {
         if let Some(object_index) = self.get_backing_object(agent) {
             object_index.internal_set_prototype(agent, prototype)
         } else if prototype
@@ -243,7 +243,7 @@ impl InternalSlots for Function {
 }
 
 impl InternalMethods for Function {
-    fn internal_get_prototype_of(self, agent: &mut Agent) -> JsResult<Option<Object>> {
+    fn internal_get_prototype_of(self, agent: Context<'_, '_, '_>) -> JsResult<Option<Object>> {
         match self {
             Function::BoundFunction(x) => x.internal_get_prototype_of(agent),
             Function::BuiltinFunction(x) => x.internal_get_prototype_of(agent),
@@ -258,7 +258,7 @@ impl InternalMethods for Function {
 
     fn internal_set_prototype_of(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         prototype: Option<Object>,
     ) -> JsResult<bool> {
         match self {
@@ -277,7 +277,7 @@ impl InternalMethods for Function {
         }
     }
 
-    fn internal_is_extensible(self, agent: &mut Agent) -> JsResult<bool> {
+    fn internal_is_extensible(self, agent: Context<'_, '_, '_>) -> JsResult<bool> {
         match self {
             Function::BoundFunction(x) => x.internal_is_extensible(agent),
             Function::BuiltinFunction(x) => x.internal_is_extensible(agent),
@@ -290,7 +290,7 @@ impl InternalMethods for Function {
         }
     }
 
-    fn internal_prevent_extensions(self, agent: &mut Agent) -> JsResult<bool> {
+    fn internal_prevent_extensions(self, agent: Context<'_, '_, '_>) -> JsResult<bool> {
         match self {
             Function::BoundFunction(x) => x.internal_prevent_extensions(agent),
             Function::BuiltinFunction(x) => x.internal_prevent_extensions(agent),
@@ -305,7 +305,7 @@ impl InternalMethods for Function {
 
     fn internal_get_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
     ) -> JsResult<Option<PropertyDescriptor>> {
         match self {
@@ -326,7 +326,7 @@ impl InternalMethods for Function {
 
     fn internal_define_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         property_descriptor: PropertyDescriptor,
     ) -> JsResult<bool> {
@@ -352,7 +352,11 @@ impl InternalMethods for Function {
         }
     }
 
-    fn internal_has_property(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_has_property(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         match self {
             Function::BoundFunction(x) => x.internal_has_property(agent, property_key),
             Function::BuiltinFunction(x) => x.internal_has_property(agent, property_key),
@@ -369,7 +373,7 @@ impl InternalMethods for Function {
 
     fn internal_get(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         receiver: Value,
     ) -> JsResult<Value> {
@@ -391,7 +395,7 @@ impl InternalMethods for Function {
 
     fn internal_set(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         value: Value,
         receiver: Value,
@@ -412,7 +416,11 @@ impl InternalMethods for Function {
         }
     }
 
-    fn internal_delete(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_delete(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         match self {
             Function::BoundFunction(x) => x.internal_delete(agent, property_key),
             Function::BuiltinFunction(x) => x.internal_delete(agent, property_key),
@@ -425,7 +433,7 @@ impl InternalMethods for Function {
         }
     }
 
-    fn internal_own_property_keys(self, agent: &mut Agent) -> JsResult<Vec<PropertyKey>> {
+    fn internal_own_property_keys(self, agent: Context<'_, '_, '_>) -> JsResult<Vec<PropertyKey>> {
         match self {
             Function::BoundFunction(x) => x.internal_own_property_keys(agent),
             Function::BuiltinFunction(x) => x.internal_own_property_keys(agent),
@@ -440,7 +448,7 @@ impl InternalMethods for Function {
 
     fn internal_call(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_argument: Value,
         arguments_list: ArgumentsList,
     ) -> JsResult<Value> {
@@ -464,7 +472,7 @@ impl InternalMethods for Function {
 
     fn internal_construct(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         arguments_list: ArgumentsList,
         new_target: Function,
     ) -> JsResult<Object> {
@@ -516,7 +524,12 @@ impl HeapMarkAndSweep for Function {
 }
 
 impl Function {
-    pub fn call(self, agent: &mut Agent, this_argument: Value, args: &[Value]) -> JsResult<Value> {
+    pub fn call(
+        self,
+        agent: Context<'_, '_, '_>,
+        this_argument: Value,
+        args: &[Value],
+    ) -> JsResult<Value> {
         self.internal_call(agent, this_argument, ArgumentsList(args))
     }
 }

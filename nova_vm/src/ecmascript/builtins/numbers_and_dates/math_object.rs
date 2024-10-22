@@ -11,6 +11,7 @@ use crate::{
         execution::{Agent, JsResult, RealmIdentifier},
         types::{IntoValue, Number, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
     SmallInteger,
 };
@@ -335,12 +336,20 @@ impl Builtin for MathObjectTrunc {
 }
 
 impl MathObject {
-    fn abs(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn abs(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let n = to_number(agent, arguments.get(0))?;
         Ok(n.abs(agent).into_value())
     }
 
-    fn acos(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn acos(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?.into_f64(agent);
         // 2. If n is NaN, n > 1𝔽, or n < -1𝔽, return NaN.
@@ -349,7 +358,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.acos()))
     }
 
-    fn acosh(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn acosh(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -370,7 +383,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.acosh()))
     }
 
-    fn asin(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn asin(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -390,7 +407,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.asin()))
     }
 
-    fn asinh(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn asinh(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -403,7 +424,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).asinh()))
     }
 
-    fn atan(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn atan(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -426,7 +451,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).atan()))
     }
 
-    fn atanh(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn atanh(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -456,7 +485,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.atanh()))
     }
 
-    fn atan2(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn atan2(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let ny be ? ToNumber(y).
         let ny = to_number(agent, arguments.get(0))?;
         // 2. Let nx be ? ToNumber(x).
@@ -578,7 +611,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, r))
     }
 
-    fn cbrt(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn cbrt(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -591,7 +628,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).cbrt()))
     }
 
-    fn ceil(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn ceil(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -616,7 +657,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.ceil()))
     }
 
-    fn clz32(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn clz32(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToUint32(x).
         let n = to_uint32(agent, arguments.get(0))?;
 
@@ -627,7 +672,11 @@ impl MathObject {
         Ok(Value::from(p))
     }
 
-    fn cos(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn cos(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -645,7 +694,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).cos()))
     }
 
-    fn cosh(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn cosh(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -668,7 +721,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).cosh()))
     }
 
-    fn exp(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn exp(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         //1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -691,7 +748,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).exp()))
     }
 
-    fn expm1(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn expm1(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -713,7 +774,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).exp_m1()))
     }
 
-    fn floor(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn floor(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -738,7 +803,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.floor()))
     }
 
-    fn fround(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn fround(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -766,7 +835,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n64))
     }
 
-    fn hypot(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn hypot(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let coerced be a new empty List.
         let mut coerced = Vec::with_capacity(arguments.len());
 
@@ -819,7 +892,11 @@ impl MathObject {
         ));
     }
 
-    fn imul(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn imul(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let a be ℝ(? ToUint32(x)).
         let a = to_uint32(agent, arguments.get(0))?;
 
@@ -833,7 +910,11 @@ impl MathObject {
         Ok(Value::from(product as i32))
     }
 
-    fn log(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn log(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -861,7 +942,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).ln()))
     }
 
-    fn log1p(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn log1p(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
         // 2. If n is one of NaN, +0𝔽, -0𝔽, or +∞𝔽, return n.
@@ -884,7 +969,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).ln_1p()))
     }
 
-    fn log10(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn log10(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
         // 2. If n is either NaN or +∞𝔽, return n.
@@ -908,7 +997,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).log10()))
     }
 
-    fn log2(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn log2(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
         // 2. If n is either NaN or +∞𝔽, return n.
@@ -931,7 +1024,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).log2()))
     }
 
-    fn max(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn max(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let coerced be a new empty List.
         let mut coerced = Vec::with_capacity(arguments.len());
 
@@ -1007,7 +1104,11 @@ impl MathObject {
         Ok(highest.into_value())
     }
 
-    fn min(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn min(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let coerced be a new empty List.
         let mut coerced = Vec::with_capacity(arguments.len());
 
@@ -1083,7 +1184,11 @@ impl MathObject {
         Ok(lowest.into_value())
     }
 
-    fn pow(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn pow(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let base = arguments.get(0);
         let exponent = arguments.get(1);
         if let (Value::Integer(base), Value::Integer(exponent)) = (base, exponent) {
@@ -1109,11 +1214,15 @@ impl MathObject {
         Ok(Number::exponentiate(agent, base, exponent).into_value())
     }
 
-    fn random(agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn random(agent: Context<'_, '_, '_>, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         Ok(Value::from_f64(agent, rand::random::<f64>()))
     }
 
-    fn round(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn round(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -1138,7 +1247,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.round()))
     }
 
-    fn sign(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn sign(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
         // 2. If n is one of NaN, +0𝔽, or -0𝔽, return n.
@@ -1153,7 +1266,11 @@ impl MathObject {
         Ok(Value::from(1))
     }
 
-    fn sin(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn sin(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
         // 2. If n is one of NaN, +0𝔽, or -0𝔽, return n.
@@ -1168,7 +1285,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).sin()))
     }
 
-    fn sinh(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn sinh(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
         // 2. If n is not finite or n is either +0𝔽 or -0𝔽, return n.
@@ -1179,7 +1300,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).sinh()))
     }
 
-    fn sqrt(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn sqrt(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
         // 2. If n is one of NaN, +0𝔽, -0𝔽, or +∞𝔽, return n.
@@ -1198,7 +1323,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).sqrt()))
     }
 
-    fn tan(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn tan(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
         // 2. If n is one of NaN, +0𝔽, or -0𝔽, return n.
@@ -1213,7 +1342,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).tan()))
     }
 
-    fn tanh(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn tanh(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
         // 2. If n is one of NaN, +0𝔽, or -0𝔽, return n.
@@ -1232,7 +1365,11 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.into_f64(agent).tanh()))
     }
 
-    fn trunc(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn trunc(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let n be ? ToNumber(x).
         let n = to_number(agent, arguments.get(0))?;
 
@@ -1257,7 +1394,7 @@ impl MathObject {
         Ok(Value::from_f64(agent, n.trunc()))
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let object_prototype = intrinsics.object_prototype();
         let this = intrinsics.math();

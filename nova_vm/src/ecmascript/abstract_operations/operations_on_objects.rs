@@ -29,6 +29,7 @@ use crate::{
             OrdinaryObject, PropertyDescriptor, PropertyKey, String, Value, BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     engine::{instanceof_operator, Vm},
     heap::{Heap, ObjectEntry},
     SmallInteger,
@@ -49,7 +50,7 @@ use crate::{
 /// > overriding some or all of that object's internal methods. In order to
 /// > encapsulate exotic object creation, the object's essential internal
 /// > methods are never modified outside those operations.
-pub(crate) fn make_basic_object(_agent: &mut Agent, _internal_slots_list: ()) -> Object {
+pub(crate) fn make_basic_object(_agent: Context<'_, '_, '_>, _internal_slots_list: ()) -> Object {
     // 1. Let obj be a newly created object with an internal slot for each name in internalSlotsList.
     // 2. Set obj's essential internal methods to the default ordinary object definitions specified in 10.1.
     // 3. Assert: If the caller will not be overriding both obj's [[GetPrototypeOf]] and [[SetPrototypeOf]] essential
@@ -67,7 +68,11 @@ pub(crate) fn make_basic_object(_agent: &mut Agent, _internal_slots_list: ()) ->
 /// key) and returns either a normal completion containing an ECMAScript
 /// language value or a throw completion. It is used to retrieve the value of a
 /// specific property of an object.
-pub(crate) fn get(agent: &mut Agent, o: impl IntoObject, p: PropertyKey) -> JsResult<Value> {
+pub(crate) fn get(
+    agent: Context<'_, '_, '_>,
+    o: impl IntoObject,
+    p: PropertyKey,
+) -> JsResult<Value> {
     // 1. Return ? O.[[Get]](P, O).
     o.into_object().internal_get(agent, p, o.into_value())
 }
@@ -80,7 +85,7 @@ pub(crate) fn get(agent: &mut Agent, o: impl IntoObject, p: PropertyKey) -> JsRe
 /// to retrieve the value of a specific property of an ECMAScript language
 /// value. If the value is not an object, the property lookup is performed
 /// using a wrapper object appropriate for the type of the value.
-pub(crate) fn get_v(agent: &mut Agent, v: Value, p: PropertyKey) -> JsResult<Value> {
+pub(crate) fn get_v(agent: Context<'_, '_, '_>, v: Value, p: PropertyKey) -> JsResult<Value> {
     // 1. Let O be ? ToObject(V).
     let o = to_object(agent, v)?;
     // 2. Return ? O.[[Get]](P, V).
@@ -95,7 +100,7 @@ pub(crate) fn get_v(agent: &mut Agent, v: Value, p: PropertyKey) -> JsResult<Val
 /// used to set the value of a specific property of an object. V is the new
 /// value for the property.
 pub(crate) fn set(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     o: Object,
     p: PropertyKey,
     v: Value,
@@ -127,7 +132,7 @@ pub(crate) fn set(
 /// > does exist and is not configurable or if O is not extensible,
 /// > [\[DefineOwnProperty]] will return false.
 pub(crate) fn create_data_property(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     object: impl InternalMethods,
     property_key: PropertyKey,
     value: Value,
@@ -153,7 +158,7 @@ pub(crate) fn create_data_property(
 /// It is used to create a new own property of an object. It throws a TypeError
 /// exception if the requested property update cannot be performed.
 pub(crate) fn create_data_property_or_throw(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     object: impl InternalMethods,
     property_key: PropertyKey,
     value: Value,
@@ -181,7 +186,7 @@ pub(crate) fn create_data_property_or_throw(
 /// that will throw a TypeError exception if the requested property update
 /// cannot be performed.
 pub(crate) fn define_property_or_throw(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     object: impl InternalMethods,
     property_key: PropertyKey,
     desc: PropertyDescriptor,
@@ -207,7 +212,7 @@ pub(crate) fn define_property_or_throw(
 /// unused or a throw completion. It is used to remove a specific own property
 /// of an object. It throws an exception if the property is not configurable.
 pub(crate) fn delete_property_or_throw(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     o: Object,
     p: PropertyKey,
 ) -> JsResult<()> {
@@ -234,7 +239,7 @@ pub(crate) fn delete_property_or_throw(
 /// value when the value of the property is expected to be a function.
 
 pub(crate) fn get_method(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     v: Value,
     p: PropertyKey,
 ) -> JsResult<Option<Function>> {
@@ -263,7 +268,11 @@ pub(crate) fn get_method(
 /// or a throw completion. It is used to determine whether an object has a
 /// property with the specified property key. The property may be either own or
 /// inherited.
-pub(crate) fn has_property(agent: &mut Agent, o: Object, p: PropertyKey) -> JsResult<bool> {
+pub(crate) fn has_property(
+    agent: Context<'_, '_, '_>,
+    o: Object,
+    p: PropertyKey,
+) -> JsResult<bool> {
     // 1. Return ? O.[[HasProperty]](P).
     o.internal_has_property(agent, p)
 }
@@ -274,7 +283,11 @@ pub(crate) fn has_property(agent: &mut Agent, o: Object, p: PropertyKey) -> JsRe
 /// (a property key) and returns either a normal completion containing a
 /// Boolean or a throw completion. It is used to determine whether an object
 /// has an own property with the specified property key.
-pub(crate) fn has_own_property(agent: &mut Agent, o: Object, p: PropertyKey) -> JsResult<bool> {
+pub(crate) fn has_own_property(
+    agent: Context<'_, '_, '_>,
+    o: Object,
+    p: PropertyKey,
+) -> JsResult<bool> {
     // 1. Let desc be ? O.[[GetOwnProperty]](P).
     let desc = o.internal_get_own_property(agent, p)?;
     // 2. If desc is undefined, return false.
@@ -294,7 +307,7 @@ pub(crate) fn has_own_property(agent: &mut Agent, o: Object, p: PropertyKey) -> 
 /// the corresponding argument of the internal method. If argumentsList is not
 /// present, a new empty List is used as its value.
 pub(crate) fn call(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     f: Value,
     v: Value,
     arguments_list: Option<ArgumentsList>,
@@ -343,7 +356,10 @@ pub(crate) mod integrity {
 /// level (SEALED or FROZEN) and returns either a normal completion containing
 /// a Boolean or a throw completion. It is used to fix the set of own
 /// properties of an object.
-pub(crate) fn set_integrity_level<T: Level>(agent: &mut Agent, o: Object) -> JsResult<bool> {
+pub(crate) fn set_integrity_level<T: Level>(
+    agent: Context<'_, '_, '_>,
+    o: Object,
+) -> JsResult<bool> {
     // 1. Let status be ? O.[[PreventExtensions]]().
     let status = o.internal_prevent_extensions(agent)?;
     // 2. If status is false, return false.
@@ -407,7 +423,10 @@ pub(crate) fn set_integrity_level<T: Level>(agent: &mut Agent, o: Object) -> JsR
 /// level (SEALED or FROZEN) and returns either a normal completion containing a
 /// Boolean or a throw completion. It is used to determine if the set of own
 /// properties of an object are fixed.
-pub(crate) fn test_integrity_level<T: Level>(agent: &mut Agent, o: Object) -> JsResult<bool> {
+pub(crate) fn test_integrity_level<T: Level>(
+    agent: Context<'_, '_, '_>,
+    o: Object,
+) -> JsResult<bool> {
     // 1. Let extensible be ? IsExtensible(O).
     // 2. If extensible is true, return false.
     // 3. NOTE: If the object is extensible, none of its properties are examined.
@@ -445,7 +464,7 @@ pub(crate) fn test_integrity_level<T: Level>(agent: &mut Agent, o: Object) -> Js
 /// The abstract operation CreateArrayFromList takes argument elements (a List
 /// of ECMAScript language values) and returns an Array. It is used to create
 /// an Array whose elements are provided by elements.
-pub(crate) fn create_array_from_list(agent: &mut Agent, elements: &[Value]) -> Array {
+pub(crate) fn create_array_from_list(agent: Context<'_, '_, '_>, elements: &[Value]) -> Array {
     let len = elements.len();
     // 1. Let array be ! ArrayCreate(0).
     let array = array_create(agent, len, len, None).unwrap();
@@ -466,7 +485,7 @@ pub(crate) fn create_array_from_list(agent: &mut Agent, elements: &[Value]) -> A
 /// returns either a normal completion containing a non-negative integer or a
 /// throw completion. It returns the value of the "length" property of an
 /// array-like object.
-pub(crate) fn length_of_array_like(agent: &mut Agent, obj: Object) -> JsResult<i64> {
+pub(crate) fn length_of_array_like(agent: Context<'_, '_, '_>, obj: Object) -> JsResult<i64> {
     // NOTE: Fast path for Array objects.
     if let Ok(array) = Array::try_from(obj) {
         return Ok(array.len(agent) as i64);
@@ -487,7 +506,10 @@ pub(crate) fn length_of_array_like(agent: &mut Agent, obj: Object) -> JsResult<i
 /// for element values of the List that is created.
 ///
 /// NOTE: This implementation doesn't yet support `elementTypes`.
-pub(crate) fn create_list_from_array_like(agent: &mut Agent, obj: Value) -> JsResult<Vec<Value>> {
+pub(crate) fn create_list_from_array_like(
+    agent: Context<'_, '_, '_>,
+    obj: Value,
+) -> JsResult<Vec<Value>> {
     match obj {
         Value::Array(array) => Ok(array
             .as_slice(agent)
@@ -529,7 +551,7 @@ pub(crate) fn create_list_from_array_like(agent: &mut Agent, obj: Value) -> JsRe
 
 /// Abstract operation Call specialized for a Function.
 pub(crate) fn call_function(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     f: Function,
     v: Value,
     arguments_list: Option<ArgumentsList>,
@@ -539,7 +561,7 @@ pub(crate) fn call_function(
 }
 
 pub(crate) fn construct(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     f: Function,
     arguments_list: Option<ArgumentsList>,
     new_target: Option<Function>,
@@ -562,7 +584,7 @@ pub(crate) fn construct(
 /// argumentsList is the list of arguments values passed to the method. If
 /// argumentsList is not present, a new empty List is used as its value.
 pub(crate) fn invoke(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     v: Value,
     p: PropertyKey,
     arguments_list: Option<ArgumentsList>,
@@ -583,7 +605,7 @@ pub(crate) fn invoke(
 /// the default algorithm for determining if O inherits from the instance
 /// object inheritance path provided by C.
 pub(crate) fn ordinary_has_instance(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     c: impl TryInto<Function>,
     o: impl IntoValue,
 ) -> JsResult<bool> {
@@ -667,7 +689,7 @@ pub(crate) mod enumerable_properties_kind {
 /// completion containing a List of ECMAScript language values or a throw
 /// completion.
 pub(crate) fn enumerable_own_properties<Kind: EnumerablePropertiesKind>(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     o: Object,
 ) -> JsResult<Vec<Value>> {
     // 1. Let ownKeys be ? O.[[OwnPropertyKeys]]().
@@ -743,7 +765,7 @@ pub(crate) fn enumerable_own_properties<Kind: EnumerablePropertiesKind>(
 /// object) and returns either a normal completion containing a Realm Record or
 /// a throw completion.
 pub(crate) fn get_function_realm(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     obj: impl IntoObject,
 ) -> JsResult<RealmIdentifier> {
     // 1. If obj has a [[Realm]] internal slot, then
@@ -779,7 +801,7 @@ pub(crate) fn get_function_realm(
 /// it, but it does not support excluded items. It can be used to implement the spread operator in
 /// object literals, but not the rest operator in object destructuring.
 pub(crate) fn copy_data_properties(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     target: OrdinaryObject,
     source: Value,
 ) -> JsResult<()> {
@@ -833,7 +855,7 @@ pub(crate) fn copy_data_properties(
 /// `OrdinaryObjectCreate(%Object.prototype%)`. This can be used to implement the rest operator in
 /// object destructuring, but not the spread operator in object literals.
 pub(crate) fn copy_data_properties_into_object(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     source: impl IntoObject,
     excluded_items: &AHashSet<PropertyKey>,
 ) -> JsResult<OrdinaryObject> {
@@ -880,7 +902,7 @@ pub(crate) fn copy_data_properties_into_object(
 /// Object) and constructor (an ECMAScript function object) and returns either
 /// a normal completion containing unused or a throw completion.
 pub(crate) fn initialize_instance_elements(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     o: Object,
     constructor: BuiltinConstructorFunction,
 ) -> JsResult<()> {
@@ -935,7 +957,7 @@ pub(crate) fn initialize_instance_elements(
 /// [[Key]] (an ECMAScript language value) and [[Elements]] (a List of ECMAScript language values)),
 /// key (an ECMAScript language value), and value (an ECMAScript language value) and returns UNUSED.
 pub(crate) fn add_value_to_keyed_group<K: Copy + Into<Value>>(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     groups: &mut Vec<GroupByRecord<K>>,
     key: K,
     value: Value,
@@ -981,7 +1003,7 @@ pub(crate) struct GroupByRecord<K: Copy + Into<Value>> {
 ///
 /// Note: This version is for "property" keyCoercion.
 pub(crate) fn group_by_property(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     items: Value,
     callback_fn: Value,
 ) -> JsResult<Vec<GroupByRecord<PropertyKey>>> {
@@ -1071,7 +1093,7 @@ pub(crate) fn group_by_property(
 ///
 /// Note: This version is for "collection" keyCoercion.
 pub(crate) fn group_by_collection(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     items: Value,
     callback_fn: Value,
 ) -> JsResult<Vec<GroupByRecord<Value>>> {

@@ -9,6 +9,7 @@ use crate::{
         execution::{Agent, JsResult, RealmIdentifier},
         types::{String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
 };
 
@@ -22,11 +23,11 @@ impl Builtin for WeakRefPrototypeDeref {
 }
 
 impl WeakRefPrototype {
-    fn deref(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn deref(_agent: Context<'_, '_, '_>, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         todo!()
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let object_prototype = intrinsics.object_prototype();
         let this = intrinsics.weak_ref_prototype();

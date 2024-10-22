@@ -17,6 +17,7 @@ use crate::{
         execution::{agent::ExceptionType, Agent, JsResult, ProtoIntrinsics},
         types::{Function, Object, PropertyKey, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::{CompactionLists, HeapMarkAndSweep, WellKnownSymbolIndexes, WorkQueues},
 };
 
@@ -38,7 +39,7 @@ pub(crate) struct IteratorRecord {
 /// either a normal completion containing an Iterator Record or a throw
 /// completion.
 pub(crate) fn get_iterator_from_method(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     obj: Value,
     method: Function,
 ) -> JsResult<IteratorRecord> {
@@ -71,7 +72,7 @@ pub(crate) fn get_iterator_from_method(
 /// language value) and kind (sync or async) and returns either a normal
 /// completion containing an Iterator Record or a throw completion.
 pub(crate) fn get_iterator(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     obj: Value,
     is_async: bool,
 ) -> JsResult<IteratorRecord> {
@@ -137,7 +138,7 @@ pub(crate) fn get_iterator(
 /// and returns either a normal completion containing an Object or a throw
 /// completion.
 pub(crate) fn iterator_next(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     iterator_record: &IteratorRecord,
     value: Option<Value>,
 ) -> JsResult<Object> {
@@ -169,7 +170,7 @@ pub(crate) fn iterator_next(
 /// The abstract operation IteratorComplete takes argument iterResult (an
 /// Object) and returns either a normal completion containing a Boolean or a
 /// throw completion.
-pub(crate) fn iterator_complete(agent: &mut Agent, iter_result: Object) -> JsResult<bool> {
+pub(crate) fn iterator_complete(agent: Context<'_, '_, '_>, iter_result: Object) -> JsResult<bool> {
     // 1. Return ToBoolean(? Get(iterResult, "done")).
     let done = get(agent, iter_result, BUILTIN_STRING_MEMORY.done.into())?;
     Ok(to_boolean(agent, done))
@@ -180,7 +181,7 @@ pub(crate) fn iterator_complete(agent: &mut Agent, iter_result: Object) -> JsRes
 /// The abstract operation IteratorValue takes argument iterResult (an
 /// Object) and returns either a normal completion containing an ECMAScript
 /// language value or a throw completion.
-pub(crate) fn iterator_value(agent: &mut Agent, iter_result: Object) -> JsResult<Value> {
+pub(crate) fn iterator_value(agent: Context<'_, '_, '_>, iter_result: Object) -> JsResult<Value> {
     // 1. Return ? Get(iterResult, "value").
     get(agent, iter_result, BUILTIN_STRING_MEMORY.value.into())
 }
@@ -198,7 +199,7 @@ pub(crate) fn iterator_value(agent: &mut Agent, iter_result: Object) -> JsResult
 /// > NOTE: Instead of returning the boolean value false we return an Option
 /// > where the false state is None. That way we can pass the Object as is.
 pub(crate) fn iterator_step(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     iterator_record: &IteratorRecord,
 ) -> JsResult<Option<Object>> {
     // 1. Let result be ? IteratorNext(iteratorRecord).
@@ -225,7 +226,7 @@ pub(crate) fn iterator_step(
 /// iterator has reached its end or the value from the IteratorResult object if
 /// a next value is available.
 pub(crate) fn iterator_step_value(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     iterator_record: &mut IteratorRecord,
 ) -> JsResult<Option<Value>> {
     // 1. Let result be Completion(IteratorNext(iteratorRecord)).
@@ -290,7 +291,7 @@ pub(crate) fn iterator_step_value(
 /// any actions it would normally perform when it has reached its completed
 /// state.
 pub(crate) fn iterator_close<T>(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     iterator_record: &IteratorRecord,
     completion: JsResult<T>,
 ) -> JsResult<T> {
@@ -337,7 +338,7 @@ pub(crate) fn iterator_close<T>(
 /// use an Iterator Record.
 #[inline(always)]
 pub(crate) fn if_abrupt_close_iterator<T>(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     value: JsResult<T>,
     iterator_record: &IteratorRecord,
 ) -> JsResult<T> {
@@ -359,7 +360,7 @@ pub(crate) fn if_abrupt_close_iterator<T>(
 /// perform any actions it would normally perform when it has reached its
 /// completed state.
 pub(crate) fn async_iterator_close(
-    _agent: &mut Agent,
+    _agent: Context<'_, '_, '_>,
     _iterator_record: &IteratorRecord,
     _completion: JsResult<Value>,
 ) -> JsResult<Value> {
@@ -384,7 +385,11 @@ pub(crate) fn async_iterator_close(
 /// ECMAScript language value) and done (a Boolean) and returns an Object that
 /// conforms to the IteratorResult interface. It creates an object that
 /// conforms to the IteratorResult interface.
-pub(crate) fn create_iter_result_object(agent: &mut Agent, value: Value, done: bool) -> Object {
+pub(crate) fn create_iter_result_object(
+    agent: Context<'_, '_, '_>,
+    value: Value,
+    done: bool,
+) -> Object {
     // 1. Let obj be OrdinaryObjectCreate(%Object.prototype%).
     let obj = ordinary_object_create_with_intrinsics(agent, Some(ProtoIntrinsics::Object), None);
     // 2. Perform ! CreateDataPropertyOrThrow(obj, "value", value).
@@ -413,7 +418,10 @@ pub(crate) fn create_iter_result_object(agent: &mut Agent, value: Value, done: b
 /// of ECMAScript language values) and returns an Iterator Record. It creates
 /// an Iterator (27.1.1.2) object record whose next method returns the
 /// successive elements of list.
-pub(crate) fn create_list_iterator_record(_agent: &mut Agent, _list: &[Value]) -> JsResult<Value> {
+pub(crate) fn create_list_iterator_record(
+    _agent: Context<'_, '_, '_>,
+    _list: &[Value],
+) -> JsResult<Value> {
     // 1. Let closure be a new Abstract Closure with no parameters that captures list and performs the following steps when called:
     // a. For each element E of list, do
     // i. Perform ? GeneratorYield(CreateIterResultObject(E, false)).
@@ -429,7 +437,7 @@ pub(crate) fn create_list_iterator_record(_agent: &mut Agent, _list: &[Value]) -
 /// Iterator Record) and returns either a normal completion containing a List
 /// of ECMAScript language values or a throw completion.
 pub(crate) fn iterator_to_list(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     iterator_record: &IteratorRecord,
 ) -> JsResult<Vec<Value>> {
     // 1. Let values be a new empty List.

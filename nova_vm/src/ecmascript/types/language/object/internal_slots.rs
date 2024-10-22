@@ -5,6 +5,7 @@
 use super::{IntoObject, Object, ObjectHeapData, OrdinaryObject};
 use crate::{
     ecmascript::execution::{Agent, ProtoIntrinsics},
+    engine::context::Context,
     heap::CreateHeapData,
 };
 
@@ -31,13 +32,13 @@ where
     ///
     /// This sets the custom "internal slot" \[\[BackingObject]].
     /// If the backing object is already set, this should panic.
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject);
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject);
 
     /// ### \[\[BackingObject\]\]
     ///
     /// Creates the custom \[\[BackingObject]] object data. This is called when
     /// the item's object features are required but the backing object is None.
-    fn create_backing_object(self, agent: &mut Agent) -> OrdinaryObject {
+    fn create_backing_object(self, agent: Context<'_, '_, '_>) -> OrdinaryObject {
         assert!(self.get_backing_object(agent).is_none());
         let prototype = self.internal_prototype(agent);
         let backing_object = agent.heap.create(ObjectHeapData {
@@ -64,7 +65,7 @@ where
     }
 
     /// #### \[\[Extensible\]\]
-    fn internal_set_extensible(self, agent: &mut Agent, value: bool) {
+    fn internal_set_extensible(self, agent: Context<'_, '_, '_>, value: bool) {
         if let Some(backing_object) = self.get_backing_object(agent) {
             backing_object.internal_set_extensible(agent, value)
         } else if !value {
@@ -92,7 +93,7 @@ where
     }
 
     /// #### \[\[Prototype\]\]
-    fn internal_set_prototype(self, agent: &mut Agent, prototype: Option<Object>) {
+    fn internal_set_prototype(self, agent: Context<'_, '_, '_>, prototype: Option<Object>) {
         if let Some(backing_object) = self.get_backing_object(agent) {
             backing_object.internal_set_prototype(agent, prototype)
         } else if prototype != self.internal_prototype(agent) {

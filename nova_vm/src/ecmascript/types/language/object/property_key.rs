@@ -17,6 +17,7 @@ use crate::{
             String, Symbol, Value,
         },
     },
+    engine::context::Context,
     heap::{CompactionLists, HeapMarkAndSweep, WorkQueues},
     SmallInteger, SmallString,
 };
@@ -33,17 +34,17 @@ pub enum PropertyKey {
 
 impl PropertyKey {
     // FIXME: This API is not necessarily in the right place.
-    pub fn from_str(agent: &mut Agent, str: &str) -> Self {
+    pub fn from_str(agent: Context<'_, '_, '_>, str: &str) -> Self {
         parse_string_to_integer_property_key(str)
             .unwrap_or_else(|| String::from_str(agent, str).into())
     }
 
-    pub fn from_static_str(agent: &mut Agent, str: &'static str) -> Self {
+    pub fn from_static_str(agent: Context<'_, '_, '_>, str: &'static str) -> Self {
         parse_string_to_integer_property_key(str)
             .unwrap_or_else(|| String::from_static_str(agent, str).into())
     }
 
-    pub fn from_string(agent: &mut Agent, string: std::string::String) -> Self {
+    pub fn from_string(agent: Context<'_, '_, '_>, string: std::string::String) -> Self {
         parse_string_to_integer_property_key(&string)
             .unwrap_or_else(|| String::from_string(agent, string).into())
     }
@@ -71,7 +72,7 @@ impl PropertyKey {
         s == n.to_string()
     }
 
-    pub fn equals(self, agent: &mut Agent, y: Self) -> bool {
+    pub fn equals(self, agent: Context<'_, '_, '_>, y: Self) -> bool {
         let x = self;
 
         match (x, y) {

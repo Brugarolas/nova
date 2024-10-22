@@ -67,7 +67,7 @@ use crate::{
     engine::Executable,
 };
 
-pub fn heap_gc(agent: &mut Agent, root_realms: &mut [Option<RealmIdentifier>]) {
+pub fn heap_gc(agent: Context<'_, '_, '_>, root_realms: &mut [Option<RealmIdentifier>]) {
     let Agent {
         heap,
         execution_context_stack,
@@ -978,7 +978,7 @@ pub fn heap_gc(agent: &mut Agent, root_realms: &mut [Option<RealmIdentifier>]) {
     sweep(agent, &bits, root_realms);
 }
 
-fn sweep(agent: &mut Agent, bits: &HeapBits, root_realms: &mut [Option<RealmIdentifier>]) {
+fn sweep(agent: Context<'_, '_, '_>, bits: &HeapBits, root_realms: &mut [Option<RealmIdentifier>]) {
     let compactions = CompactionLists::create_from_bits(bits);
 
     for realm in root_realms {

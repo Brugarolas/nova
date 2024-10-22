@@ -13,6 +13,7 @@ use crate::{
             InternalMethods, InternalSlots, IntoObject, IntoValue, Object, OrdinaryObject, Value,
         },
     },
+    engine::context::Context,
     heap::{
         indexes::ArrayBufferIndex, CompactionLists, CreateHeapData, Heap, HeapMarkAndSweep,
         WorkQueues,
@@ -53,7 +54,7 @@ impl ArrayBuffer {
     /// Resize a Resizable ArrayBuffer.
     ///
     /// `new_byte_length` must be a safe integer.
-    pub(crate) fn resize(self, agent: &mut Agent, new_byte_length: usize) {
+    pub(crate) fn resize(self, agent: Context<'_, '_, '_>, new_byte_length: usize) {
         agent[self].resize(new_byte_length);
     }
 
@@ -62,7 +63,7 @@ impl ArrayBuffer {
     /// `self` and `source` must be different ArrayBuffers.
     pub(crate) fn copy_array_buffer_data(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         source: ArrayBuffer,
         first: usize,
         count: usize,
@@ -168,7 +169,7 @@ impl InternalSlots for ArrayBuffer {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 }

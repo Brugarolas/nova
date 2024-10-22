@@ -15,6 +15,7 @@ use crate::{
             InternalMethods, InternalSlots, IntoObject, IntoValue, Object, OrdinaryObject, Value,
         },
     },
+    engine::context::Context,
     heap::{
         indexes::MapIteratorIndex, CompactionLists, CreateHeapData, Heap, HeapMarkAndSweep,
         WorkQueues,
@@ -35,7 +36,11 @@ impl MapIterator {
         self.0.into_index()
     }
 
-    pub(crate) fn from_map(agent: &mut Agent, map: Map, kind: CollectionIteratorKind) -> Self {
+    pub(crate) fn from_map(
+        agent: Context<'_, '_, '_>,
+        map: Map,
+        kind: CollectionIteratorKind,
+    ) -> Self {
         agent.heap.create(MapIteratorHeapData {
             object_index: None,
             map: Some(map),
@@ -104,7 +109,7 @@ impl InternalSlots for MapIterator {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 }

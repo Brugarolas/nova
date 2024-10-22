@@ -9,6 +9,7 @@ use crate::{
         execution::{Agent, JsResult, RealmIdentifier},
         types::{IntoObject, Object, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::IntrinsicConstructorIndexes,
 };
 
@@ -27,7 +28,7 @@ impl BuiltinIntrinsicConstructor for AsyncGeneratorFunctionConstructor {
 
 impl AsyncGeneratorFunctionConstructor {
     fn behaviour(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -35,7 +36,7 @@ impl AsyncGeneratorFunctionConstructor {
         todo!()
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let function_constructor = intrinsics.function();
         let async_generator_function_prototype = intrinsics.async_generator_function_prototype();

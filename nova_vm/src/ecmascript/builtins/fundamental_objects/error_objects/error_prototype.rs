@@ -2,12 +2,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::ecmascript::{
-    abstract_operations::{operations_on_objects::get, type_conversion::to_string},
-    builders::ordinary_object_builder::OrdinaryObjectBuilder,
-    builtins::{ArgumentsList, Builtin},
-    execution::{agent::ExceptionType, Agent, JsResult, RealmIdentifier},
-    types::{Object, PropertyKey, String, Value, BUILTIN_STRING_MEMORY},
+use crate::{
+    ecmascript::{
+        abstract_operations::{operations_on_objects::get, type_conversion::to_string},
+        builders::ordinary_object_builder::OrdinaryObjectBuilder,
+        builtins::{ArgumentsList, Builtin},
+        execution::{agent::ExceptionType, Agent, JsResult, RealmIdentifier},
+        types::{Object, PropertyKey, String, Value, BUILTIN_STRING_MEMORY},
+    },
+    engine::context::Context,
 };
 
 pub(crate) struct ErrorPrototype;
@@ -25,7 +28,11 @@ impl Builtin for ErrorPrototypeToString {
 
 impl ErrorPrototype {
     /// ### [20.5.3.4 Error.prototype.toString ( )](https://tc39.es/ecma262/#sec-error.prototype.tostring)
-    fn to_string(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn to_string(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let O be the this value.
         // 2. If O is not an Object, throw a TypeError exception.
         let Ok(o) = Object::try_from(this_value) else {
@@ -64,7 +71,7 @@ impl ErrorPrototype {
         }
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let object_prototype = intrinsics.object_prototype();
         let this = intrinsics.error_prototype();

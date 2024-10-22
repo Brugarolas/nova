@@ -24,6 +24,7 @@ use crate::{
             BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
     SmallInteger,
 };
@@ -82,7 +83,11 @@ impl JSONObject {
     /// > likewise does not apply during JSON.parse, means that not all texts
     /// > accepted by JSON.parse are valid as a PrimaryExpression, despite
     /// > matching the grammar.
-    fn parse(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn parse(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let text = arguments.get(0);
         let reviver = arguments.get(1);
 
@@ -139,14 +144,14 @@ impl JSONObject {
     }
 
     fn stringify(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
         todo!();
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let object_prototype = intrinsics.object_prototype();
         let this = intrinsics.json();
@@ -183,7 +188,7 @@ impl JSONObject {
 /// > In the case where there are duplicate name Strings within an object,
 /// > lexically preceding values for the same key shall be overwritten.
 pub(crate) fn internalize_json_property(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     holder: Object,
     name: PropertyKey,
     reviver: Function,
@@ -254,7 +259,10 @@ pub(crate) fn internalize_json_property(
     )
 }
 
-pub(crate) fn value_from_json(agent: &mut Agent, json: &sonic_rs::Value) -> JsResult<Value> {
+pub(crate) fn value_from_json(
+    agent: Context<'_, '_, '_>,
+    json: &sonic_rs::Value,
+) -> JsResult<Value> {
     match json.get_type() {
         sonic_rs::JsonType::Null => Ok(Value::Null),
         sonic_rs::JsonType::Boolean => Ok(Value::Boolean(json.is_true())),

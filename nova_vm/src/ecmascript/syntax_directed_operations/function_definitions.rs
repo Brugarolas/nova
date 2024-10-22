@@ -34,7 +34,7 @@ use crate::{
             Value, BUILTIN_STRING_MEMORY,
         },
     },
-    engine::{Executable, ExecutionResult, FunctionExpression, Vm},
+    engine::{context::Context, Executable, ExecutionResult, FunctionExpression, Vm},
     heap::CreateHeapData,
 };
 use oxc_ast::ast::{self};
@@ -93,7 +93,7 @@ impl ContainsExpression for ast::ArrayPattern<'_> {
 /// arguments env (an Environment Record) and privateEnv (a PrivateEnvironment
 /// Record or null) and returns an ECMAScript function object.
 pub(crate) fn instantiate_ordinary_function_object(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     function: &ast::Function<'_>,
     env: EnvironmentIndex,
     private_env: Option<PrivateEnvironmentIndex>,
@@ -177,7 +177,7 @@ pub(crate) fn instantiate_ordinary_function_object(
 // The syntax-directed operation InstantiateOrdinaryFunctionExpression takes optional argument name (a property key or a Private Name) and returns an ECMAScript function object. It is defined piecewise over the following productions:
 
 pub(crate) fn instantiate_ordinary_function_expression(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     function: &FunctionExpression,
     name: Option<String>,
 ) -> ECMAScriptFunction {
@@ -235,7 +235,7 @@ pub(crate) struct CompileFunctionBodyData<'a> {
 }
 
 impl CompileFunctionBodyData<'static> {
-    fn new(agent: &mut Agent, function: ECMAScriptFunction) -> Self {
+    fn new(agent: Context<'_, '_, '_>, function: ECMAScriptFunction) -> Self {
         let ecmascript_function = &agent[function].ecmascript_function;
         // SAFETY: We're alive so SourceCode must be too.
         let (params, body) = unsafe {
@@ -260,7 +260,7 @@ impl CompileFunctionBodyData<'static> {
 /// ECMAScript language values) and returns either a normal completion
 /// containing an ECMAScript language value or an abrupt completion.
 pub(crate) fn evaluate_function_body(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     function_object: ECMAScriptFunction,
     arguments_list: ArgumentsList,
 ) -> JsResult<Value> {
@@ -280,7 +280,7 @@ pub(crate) fn evaluate_function_body(
 
 /// ### [15.8.4 Runtime Semantics: EvaluateAsyncFunctionBody](https://tc39.es/ecma262/#sec-runtime-semantics-evaluateasyncfunctionbody)
 pub(crate) fn evaluate_async_function_body(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     function_object: ECMAScriptFunction,
     arguments_list: ArgumentsList,
 ) -> Promise {
@@ -352,7 +352,7 @@ pub(crate) fn evaluate_async_function_body(
 /// ECMAScript language values) and returns a throw completion or a return
 /// completion.
 pub(crate) fn evaluate_generator_body(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     function_object: ECMAScriptFunction,
     arguments_list: ArgumentsList,
 ) -> JsResult<Value> {

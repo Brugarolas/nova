@@ -9,6 +9,7 @@ use crate::{
         execution::{Agent, JsResult, RealmIdentifier},
         types::{PropertyKey, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
 };
 
@@ -160,12 +161,16 @@ impl Builtin for DataViewPrototypeSetUint32 {
 }
 
 impl DataViewPrototype {
-    fn get_buffer(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_buffer(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
     fn get_byte_length(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _: ArgumentsList,
     ) -> JsResult<Value> {
@@ -173,94 +178,174 @@ impl DataViewPrototype {
     }
 
     fn get_byte_offset(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _: ArgumentsList,
     ) -> JsResult<Value> {
         todo!()
     }
 
-    fn get_big_int64(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_big_int64(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn get_big_uint64(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_big_uint64(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn get_float32(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_float32(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn get_float64(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_float64(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn get_int8(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_int8(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn get_int16(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_int16(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn get_int32(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_int32(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn get_uint8(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_uint8(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn get_uint16(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_uint16(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn get_uint32(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_uint32(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn set_big_int64(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn set_big_int64(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn set_big_uint64(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn set_big_uint64(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn set_float32(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn set_float32(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn set_float64(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn set_float64(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn set_int8(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn set_int8(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn set_int16(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn set_int16(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn set_int32(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn set_int32(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn set_uint8(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn set_uint8(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn set_uint16(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn set_uint16(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn set_uint32(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn set_uint32(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let object_prototype = intrinsics.object_prototype();
         let this = intrinsics.data_view_prototype();

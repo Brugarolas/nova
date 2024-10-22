@@ -13,6 +13,7 @@ use crate::{
         execution::{agent::ExceptionType, Agent, JsResult, ProtoIntrinsics, RealmIdentifier},
         types::{Function, IntoObject, IntoValue, Object, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::IntrinsicConstructorIndexes,
 };
 
@@ -90,7 +91,7 @@ pub(crate) struct NativeErrorConstructors;
 impl NativeErrorConstructors {
     #[inline(always)]
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         error_kind: ExceptionType,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -137,7 +138,7 @@ impl NativeErrorConstructors {
     }
 
     fn eval_behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -146,7 +147,7 @@ impl NativeErrorConstructors {
     }
 
     fn range_behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -155,7 +156,7 @@ impl NativeErrorConstructors {
     }
 
     fn reference_behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -164,7 +165,7 @@ impl NativeErrorConstructors {
     }
 
     fn syntax_behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -173,7 +174,7 @@ impl NativeErrorConstructors {
     }
 
     fn type_behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -182,7 +183,7 @@ impl NativeErrorConstructors {
     }
 
     fn uri_behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -190,7 +191,7 @@ impl NativeErrorConstructors {
         Self::behaviour(agent, ExceptionType::UriError, arguments, new_target)
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let error_constructor = intrinsics.error().into_object();
         let eval_error_prototype = intrinsics.eval_error_prototype();

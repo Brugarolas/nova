@@ -14,6 +14,7 @@ use crate::{
             Function, IntoObject, IntoValue, Object, OrdinaryObject, Value, BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::ObjectEntry,
 };
 
@@ -92,7 +93,7 @@ impl PropertyDescriptor {
     /// Property Descriptor or undefined) and returns an Object or undefined.
     pub fn from_property_descriptor(
         desc: Option<Self>,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
     ) -> Option<OrdinaryObject> {
         // 1. If Desc is undefined, return undefined.
         let desc = desc?;
@@ -175,7 +176,7 @@ impl PropertyDescriptor {
     /// The abstract operation ToPropertyDescriptor takes argument Obj (an
     /// ECMAScript language value) and returns either a normal completion
     /// containing a Property Descriptor or a throw completion.
-    pub fn to_property_descriptor(agent: &mut Agent, obj: Value) -> JsResult<Self> {
+    pub fn to_property_descriptor(agent: Context<'_, '_, '_>, obj: Value) -> JsResult<Self> {
         // 1. If Obj is not an Object, throw a TypeError exception.
         let Ok(obj) = Object::try_from(obj) else {
             let obj_repr = obj.string_repr(agent);

@@ -2,51 +2,35 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::ecmascript::abstract_operations::operations_on_iterator_objects::get_iterator_from_method;
-use crate::ecmascript::abstract_operations::operations_on_iterator_objects::if_abrupt_close_iterator;
-use crate::ecmascript::abstract_operations::operations_on_iterator_objects::iterator_close;
-use crate::ecmascript::abstract_operations::operations_on_iterator_objects::iterator_step_value;
-use crate::ecmascript::abstract_operations::operations_on_objects::call_function;
-use crate::ecmascript::abstract_operations::operations_on_objects::construct;
-use crate::ecmascript::abstract_operations::operations_on_objects::create_data_property_or_throw;
-use crate::ecmascript::abstract_operations::operations_on_objects::get;
-use crate::ecmascript::abstract_operations::operations_on_objects::get_method;
-use crate::ecmascript::abstract_operations::operations_on_objects::length_of_array_like;
-use crate::ecmascript::abstract_operations::operations_on_objects::set;
-use crate::ecmascript::abstract_operations::testing_and_comparison::is_array;
-
-use crate::ecmascript::abstract_operations::testing_and_comparison::is_callable;
-use crate::ecmascript::abstract_operations::testing_and_comparison::is_constructor;
-use crate::ecmascript::abstract_operations::testing_and_comparison::same_value_zero;
-use crate::ecmascript::abstract_operations::type_conversion::to_object;
-use crate::ecmascript::builders::builtin_function_builder::BuiltinFunctionBuilder;
-
-use crate::ecmascript::builtins::array_create;
-use crate::ecmascript::builtins::ordinary::get_prototype_from_constructor;
-use crate::ecmascript::builtins::ArgumentsList;
-use crate::ecmascript::builtins::Behaviour;
-use crate::ecmascript::builtins::Builtin;
-use crate::ecmascript::builtins::BuiltinGetter;
-use crate::ecmascript::builtins::BuiltinIntrinsicConstructor;
-use crate::ecmascript::execution::agent::ExceptionType;
-use crate::ecmascript::execution::Agent;
-use crate::ecmascript::execution::JsResult;
-
-use crate::ecmascript::execution::ProtoIntrinsics;
-use crate::ecmascript::execution::RealmIdentifier;
-
-use crate::ecmascript::types::Function;
-use crate::ecmascript::types::IntoObject;
-use crate::ecmascript::types::IntoValue;
-use crate::ecmascript::types::Number;
-use crate::ecmascript::types::Object;
-use crate::ecmascript::types::PropertyKey;
-use crate::ecmascript::types::String;
-use crate::ecmascript::types::Value;
-use crate::ecmascript::types::BUILTIN_STRING_MEMORY;
-use crate::heap::IntrinsicConstructorIndexes;
-use crate::heap::WellKnownSymbolIndexes;
-use crate::SmallInteger;
+use crate::{
+    ecmascript::{
+        abstract_operations::{
+            operations_on_iterator_objects::{
+                get_iterator_from_method, if_abrupt_close_iterator, iterator_close,
+                iterator_step_value,
+            },
+            operations_on_objects::{
+                call_function, construct, create_data_property_or_throw, get, get_method,
+                length_of_array_like, set,
+            },
+            testing_and_comparison::{is_array, is_callable, is_constructor, same_value_zero},
+            type_conversion::to_object,
+        },
+        builders::builtin_function_builder::BuiltinFunctionBuilder,
+        builtins::{
+            array_create, ordinary::get_prototype_from_constructor, ArgumentsList, Behaviour,
+            Builtin, BuiltinGetter, BuiltinIntrinsicConstructor,
+        },
+        execution::{agent::ExceptionType, Agent, JsResult, ProtoIntrinsics, RealmIdentifier},
+        types::{
+            Function, IntoObject, IntoValue, Number, Object, PropertyKey, String, Value,
+            BUILTIN_STRING_MEMORY,
+        },
+    },
+    engine::context::Context,
+    heap::{IntrinsicConstructorIndexes, WellKnownSymbolIndexes},
+    SmallInteger,
+};
 
 pub struct ArrayConstructor;
 
@@ -90,7 +74,7 @@ impl BuiltinGetter for ArrayGetSpecies {}
 impl ArrayConstructor {
     /// ### [23.1.1.1 Array ( ...values )](https://tc39.es/ecma262/#sec-array)
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -191,7 +175,11 @@ impl ArrayConstructor {
     }
 
     /// ### [23.1.2.1 Array.from ( items \[ , mapfn \[ , thisArg \] \] )](https://tc39.es/ecma262/#sec-array.from)
-    fn from(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn from(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let items = arguments.get(0);
         let mapfn = arguments.get(1);
         let this_arg = arguments.get(2);
@@ -374,7 +362,7 @@ impl ArrayConstructor {
 
     /// ### [23.1.2.2 Array.isArray ( arg )](https://tc39.es/ecma262/#sec-array.isarray)
     fn is_array(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -382,7 +370,11 @@ impl ArrayConstructor {
     }
 
     /// ### [23.1.2.3 Array.of ( ...items )](https://tc39.es/ecma262/#sec-array.of)
-    fn of(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn of(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let len be the number of elements in items.
         let len = arguments.len();
 
@@ -436,7 +428,7 @@ impl ArrayConstructor {
         Ok(this_value)
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let function_prototype = intrinsics.function_prototype().into_object();
         let array_prototype = intrinsics.array_prototype();

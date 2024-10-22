@@ -52,38 +52,38 @@ impl Numeric {
         matches!(self, Self::Number(_) | Self::SmallF64(_) | Self::Integer(_))
     }
 
-    pub fn is_pos_zero(self, agent: &mut Agent) -> bool {
+    pub fn is_pos_zero(self, agent: Context<'_, '_, '_>) -> bool {
         Number::try_from(self)
             .map(|n| n.is_pos_zero(agent))
             .unwrap_or(false)
     }
 
-    pub fn is_neg_zero(self, agent: &mut Agent) -> bool {
+    pub fn is_neg_zero(self, agent: Context<'_, '_, '_>) -> bool {
         Number::try_from(self)
             .map(|n| n.is_neg_zero(agent))
             .unwrap_or(false)
     }
 
-    pub fn is_pos_infinity(self, agent: &mut Agent) -> bool {
+    pub fn is_pos_infinity(self, agent: Context<'_, '_, '_>) -> bool {
         Number::try_from(self)
             .map(|n| n.is_pos_infinity(agent))
             .unwrap_or(false)
     }
 
-    pub fn is_neg_infinity(self, agent: &mut Agent) -> bool {
+    pub fn is_neg_infinity(self, agent: Context<'_, '_, '_>) -> bool {
         Number::try_from(self)
             .map(|n| n.is_neg_infinity(agent))
             .unwrap_or(false)
     }
 
-    pub fn is_nan(self, agent: &mut Agent) -> bool {
+    pub fn is_nan(self, agent: Context<'_, '_, '_>) -> bool {
         Number::try_from(self)
             .map(|n| n.is_nan(agent))
             .unwrap_or(false)
     }
 
     /// ### [ℝ](https://tc39.es/ecma262/#%E2%84%9D)
-    pub fn to_real(self, agent: &mut Agent) -> JsResult<f64> {
+    pub fn to_real(self, agent: Context<'_, '_, '_>) -> JsResult<f64> {
         Ok(match self {
             Self::Number(n) => agent[n],
             Self::Integer(i) => i.into_i64() as f64,

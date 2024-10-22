@@ -44,6 +44,7 @@ pub(crate) use private_environment::PrivateEnvironment;
 
 use crate::{
     ecmascript::types::{Base, Object, Reference, String, Value},
+    engine::context::Context,
     heap::{CompactionLists, HeapMarkAndSweep, WorkQueues},
 };
 
@@ -217,7 +218,7 @@ impl EnvironmentIndex {
     ///
     /// Determine if an Environment Record has a binding for the String value
     /// N. Return true if it does and false if it does not.
-    pub(crate) fn has_binding(self, agent: &mut Agent, name: String) -> JsResult<bool> {
+    pub(crate) fn has_binding(self, agent: Context<'_, '_, '_>, name: String) -> JsResult<bool> {
         match self {
             EnvironmentIndex::Declarative(idx) => Ok(idx.has_binding(agent, name)),
             EnvironmentIndex::Function(idx) => Ok(idx.has_binding(agent, name)),
@@ -233,7 +234,7 @@ impl EnvironmentIndex {
     /// Boolean argument D is true the binding may be subsequently deleted.
     pub(crate) fn create_mutable_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         is_deletable: bool,
     ) -> JsResult<()> {
@@ -260,7 +261,7 @@ impl EnvironmentIndex {
     /// reference that binding.
     pub(crate) fn create_immutable_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         is_strict: bool,
     ) -> JsResult<()> {
@@ -289,7 +290,7 @@ impl EnvironmentIndex {
     /// language type.
     pub(crate) fn initialize_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         value: Value,
     ) -> JsResult<()> {
@@ -316,7 +317,7 @@ impl EnvironmentIndex {
     /// throw a TypeError exception.
     pub(crate) fn set_mutable_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         value: Value,
         is_strict: bool,
@@ -344,7 +345,7 @@ impl EnvironmentIndex {
     /// value of S.
     pub(crate) fn get_binding_value(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         is_strict: bool,
     ) -> JsResult<Value> {
@@ -362,7 +363,7 @@ impl EnvironmentIndex {
     /// text of the bound name. If a binding for N exists, remove the binding
     /// and return true. If the binding exists but cannot be removed return
     /// false.
-    pub(crate) fn delete_binding(self, agent: &mut Agent, name: String) -> JsResult<bool> {
+    pub(crate) fn delete_binding(self, agent: Context<'_, '_, '_>, name: String) -> JsResult<bool> {
         match self {
             EnvironmentIndex::Declarative(idx) => Ok(idx.delete_binding(agent, name)),
             EnvironmentIndex::Function(idx) => Ok(idx.delete_binding(agent, name)),
@@ -375,7 +376,7 @@ impl EnvironmentIndex {
     ///
     /// Determine if an Environment Record establishes a this binding. Return
     /// true if it does and false if it does not.
-    pub(crate) fn has_this_binding(self, agent: &mut Agent) -> bool {
+    pub(crate) fn has_this_binding(self, agent: Context<'_, '_, '_>) -> bool {
         match self {
             EnvironmentIndex::Declarative(_) => false,
             EnvironmentIndex::Function(idx) => idx.has_this_binding(agent),
@@ -388,7 +389,7 @@ impl EnvironmentIndex {
     ///
     /// Determine if an Environment Record establishes a super method binding.
     /// Return true if it does and false if it does not.
-    pub(crate) fn has_super_binding(self, agent: &mut Agent) -> bool {
+    pub(crate) fn has_super_binding(self, agent: Context<'_, '_, '_>) -> bool {
         match self {
             EnvironmentIndex::Declarative(idx) => idx.has_super_binding(),
             EnvironmentIndex::Function(idx) => idx.has_super_binding(agent),
@@ -401,7 +402,7 @@ impl EnvironmentIndex {
     ///
     /// If this Environment Record is associated with a with statement, return
     /// the with object. Otherwise, return undefined.
-    pub(crate) fn with_base_object(self, agent: &mut Agent) -> Option<Object> {
+    pub(crate) fn with_base_object(self, agent: Context<'_, '_, '_>) -> Option<Object> {
         match self {
             EnvironmentIndex::Declarative(idx) => idx.with_base_object(),
             EnvironmentIndex::Function(idx) => idx.with_base_object(),
@@ -459,7 +460,7 @@ impl Default for Environments {
 /// returns either a normal completion containing a Reference Record or a throw
 /// completion.
 pub(crate) fn get_identifier_reference(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     env: Option<EnvironmentIndex>,
     name: String,
     strict: bool,
@@ -634,7 +635,7 @@ impl Environments {
 /// The abstract operation GetThisEnvironment takes no arguments and returns an
 /// Environment Record. It finds the Environment Record that currently supplies
 /// the binding of the keyword this.
-pub(crate) fn get_this_environment(agent: &mut Agent) -> EnvironmentIndex {
+pub(crate) fn get_this_environment(agent: Context<'_, '_, '_>) -> EnvironmentIndex {
     // 1. Let env be the running execution context's LexicalEnvironment.
     let mut env = agent
         .running_execution_context()

@@ -5,6 +5,7 @@
 use crate::ecmascript::{
     builders::ordinary_object_builder::OrdinaryObjectBuilder,
     builtins::{ArgumentsList, Behaviour, Builtin},
+    engine::context::Context,
     execution::{Agent, JsResult, RealmIdentifier},
     types::{String, Value, BUILTIN_STRING_MEMORY},
 };
@@ -31,19 +32,23 @@ impl Builtin for AsyncFromSyncIteratorPrototypeThrow {
 }
 
 impl AsyncFromSyncIteratorPrototype {
-    fn next(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn next(_agent: Context<'_, '_, '_>, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         todo!()
     }
 
-    fn r#return(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn r#return(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    fn throw(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn throw(_agent: Context<'_, '_, '_>, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
         todo!()
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let async_iterator_prototype = intrinsics.async_iterator_prototype();
         let this = intrinsics.async_from_sync_iterator_prototype();

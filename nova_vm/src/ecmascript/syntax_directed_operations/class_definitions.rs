@@ -10,12 +10,13 @@ use crate::ecmascript::{
     builtins::{
         ordinary::ordinary_create_from_constructor, ArgumentsList, BuiltinConstructorFunction,
     },
+    engine::context::Context,
     execution::{agent::ExceptionType, Agent, JsResult, ProtoIntrinsics},
     types::{Function, InternalMethods, Object},
 };
 
 pub(crate) fn base_class_default_constructor(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     new_target: Object,
 ) -> JsResult<Object> {
     // ii. If NewTarget is undefined, throw a TypeError exception.
@@ -41,7 +42,7 @@ pub(crate) fn base_class_default_constructor(
 }
 
 pub(crate) fn derived_class_default_constructor(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     args: ArgumentsList,
     new_target: Object,
 ) -> JsResult<Object> {

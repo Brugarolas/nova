@@ -146,7 +146,7 @@ pub(crate) struct SuspendedVm {
 impl SuspendedVm {
     pub(crate) fn resume(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         executable: Executable,
         value: Value,
     ) -> ExecutionResult {
@@ -156,7 +156,7 @@ impl SuspendedVm {
 
     pub(crate) fn resume_throw(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         executable: Executable,
         err: Value,
     ) -> ExecutionResult {
@@ -210,7 +210,7 @@ impl Vm {
 
     /// Executes an executable using the virtual machine.
     pub(crate) fn execute(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         executable: Executable,
         arguments: Option<&[Value]>,
     ) -> ExecutionResult {
@@ -257,7 +257,7 @@ impl Vm {
 
     pub fn resume(
         mut self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         executable: Executable,
         value: Value,
     ) -> ExecutionResult {
@@ -267,7 +267,7 @@ impl Vm {
 
     pub fn resume_throw(
         mut self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         executable: Executable,
         err: Value,
     ) -> ExecutionResult {
@@ -278,7 +278,7 @@ impl Vm {
         self.inner_execute(agent, executable)
     }
 
-    fn inner_execute(mut self, agent: &mut Agent, executable: Executable) -> ExecutionResult {
+    fn inner_execute(mut self, agent: Context<'_, '_, '_>, executable: Executable) -> ExecutionResult {
         #[cfg(feature = "interleaved-gc")]
         let do_gc = !agent.options.disable_gc;
         #[cfg(feature = "interleaved-gc")]
@@ -337,7 +337,7 @@ impl Vm {
     }
 
     #[must_use]
-    fn handle_error(&mut self, agent: &mut Agent, err: JsError) -> bool {
+    fn handle_error(&mut self, agent: Context<'_, '_, '_>, err: JsError) -> bool {
         if let Some(ejt) = self.exception_jump_target_stack.pop() {
             self.ip = ejt.ip;
             agent
@@ -354,7 +354,7 @@ impl Vm {
     }
 
     fn execute_instruction(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         vm: &mut Vm,
         executable: Executable,
         instr: &Instr,
@@ -1899,7 +1899,7 @@ impl Vm {
     }
 
     fn execute_simple_array_binding(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         vm: &mut Vm,
         executable: Executable,
         mut iterator: VmIterator,
@@ -1986,7 +1986,7 @@ impl Vm {
     }
 
     fn execute_simple_object_binding(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         vm: &mut Vm,
         executable: Executable,
         object: Object,
@@ -2054,7 +2054,7 @@ impl Vm {
     }
 
     fn execute_nested_simple_binding(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         vm: &mut Vm,
         executable: Executable,
         value: Value,
@@ -2084,7 +2084,7 @@ impl Vm {
 /// or a Number, or a throw completion.
 #[inline]
 fn apply_string_or_numeric_binary_operator(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     lval: Value,
     op_text: BinaryOperator,
     rval: Value,
@@ -2300,7 +2300,7 @@ fn typeof_operator(_: &mut Agent, val: Value) -> String {
 /// > semantics. If an object does not define or inherit @@hasInstance it uses
 /// > the default instanceof semantics.
 pub(crate) fn instanceof_operator(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     value: impl IntoValue,
     target: impl IntoValue,
 ) -> JsResult<bool> {

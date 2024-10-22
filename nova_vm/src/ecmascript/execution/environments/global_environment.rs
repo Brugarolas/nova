@@ -4,19 +4,24 @@
 
 use ahash::AHashSet;
 
-use crate::ecmascript::abstract_operations::operations_on_objects::{
-    define_property_or_throw, has_own_property, set,
-};
-use crate::ecmascript::abstract_operations::testing_and_comparison::is_extensible;
-use crate::ecmascript::execution::agent::ExceptionType;
-use crate::ecmascript::execution::JsResult;
-use crate::ecmascript::types::{Object, PropertyDescriptor, PropertyKey, String, Value};
-use crate::ecmascript::{execution::Agent, types::InternalMethods};
-use crate::heap::{CompactionLists, HeapMarkAndSweep, WorkQueues};
-
-use super::{
-    DeclarativeEnvironment, DeclarativeEnvironmentIndex, GlobalEnvironmentIndex, ObjectEnvironment,
-    ObjectEnvironmentIndex,
+use crate::{
+    ecmascript::{
+        abstract_operations::{
+            operations_on_objects::{define_property_or_throw, has_own_property, set},
+            testing_and_comparison::is_extensible,
+        },
+        execution::{
+            agent::ExceptionType,
+            environments::{
+                DeclarativeEnvironment, DeclarativeEnvironmentIndex, GlobalEnvironmentIndex,
+                ObjectEnvironment, ObjectEnvironmentIndex,
+            },
+            Agent, JsResult,
+        },
+        types::{InternalMethods, Object, PropertyDescriptor, PropertyKey, String, Value},
+    },
+    engine::context::Context,
+    heap::{CompactionLists, HeapMarkAndSweep, WorkQueues},
 };
 
 /// ### [9.1.1.4 Global Environment Records](https://tc39.es/ecma262/#sec-global-environment-records)
@@ -66,7 +71,11 @@ impl GlobalEnvironment {
     /// The abstract operation NewGlobalEnvironment takes arguments G (an
     /// Object) and thisValue (an Object) and returns a Global Environment
     /// Record.
-    pub(crate) fn new(agent: &mut Agent, global: Object, this_value: Object) -> GlobalEnvironment {
+    pub(crate) fn new(
+        agent: Context<'_, '_, '_>,
+        global: Object,
+        this_value: Object,
+    ) -> GlobalEnvironment {
         // 1. Let objRec be NewObjectEnvironment(G, false, null).
         let obj_rec = ObjectEnvironment::new(global, false, None);
         agent.heap.environments.object.push(Some(obj_rec));
@@ -142,7 +151,7 @@ impl GlobalEnvironmentIndex {
     /// takes argument N (a String) and returns either a normal completion
     /// containing a Boolean or a throw completion. It determines if the
     /// argument identifier is one of the identifiers bound by the record.
-    pub(crate) fn has_binding(self, agent: &mut Agent, name: String) -> JsResult<bool> {
+    pub(crate) fn has_binding(self, agent: Context<'_, '_, '_>, name: String) -> JsResult<bool> {
         let env_rec = &agent[self];
         // 1. Let DclRec be envRec.[[DeclarativeRecord]].
         // 2. If ! DclRec.HasBinding(N) is true, return true.
@@ -167,7 +176,7 @@ impl GlobalEnvironmentIndex {
     /// binding is marked as being subject to deletion.
     pub(crate) fn create_mutable_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         is_deletable: bool,
     ) -> JsResult<()> {
@@ -197,7 +206,7 @@ impl GlobalEnvironmentIndex {
     /// binding.
     pub(crate) fn create_immutable_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         is_strict: bool,
     ) -> JsResult<()> {
@@ -226,7 +235,7 @@ impl GlobalEnvironmentIndex {
     /// uninitialized binding for N must already exist.
     pub(crate) fn initialize_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         value: Value,
     ) -> JsResult<()> {
@@ -259,7 +268,7 @@ impl GlobalEnvironmentIndex {
     /// or is not currently writable, error handling is determined by S.
     pub(crate) fn set_mutable_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         value: Value,
         is_strict: bool,
@@ -291,7 +300,7 @@ impl GlobalEnvironmentIndex {
     /// determined by S.
     pub(crate) fn get_binding_value(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         n: String,
         s: bool,
     ) -> JsResult<Value> {
@@ -316,7 +325,7 @@ impl GlobalEnvironmentIndex {
     /// takes argument N (a String) and returns either a normal completion
     /// containing a Boolean or a throw completion. It can only delete bindings
     /// that have been explicitly designated as being subject to deletion.
-    pub(crate) fn delete_binding(self, agent: &mut Agent, name: String) -> JsResult<bool> {
+    pub(crate) fn delete_binding(self, agent: Context<'_, '_, '_>, name: String) -> JsResult<bool> {
         let env_rec = &agent[self];
         // 1. Let DclRec be envRec.[[DeclarativeRecord]].
         let dcl_rec = env_rec.declarative_record;
@@ -434,7 +443,7 @@ impl GlobalEnvironmentIndex {
     /// that must not be shadowed by a global lexical binding.
     pub(crate) fn has_restricted_global_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
     ) -> JsResult<bool> {
         let env_rec = &agent[self];
@@ -462,7 +471,11 @@ impl GlobalEnvironmentIndex {
     /// a corresponding CreateGlobalVarBinding call would succeed if called for
     /// the same argument N. Redundant var declarations and var declarations
     /// for pre-existing global object properties are allowed.
-    pub(crate) fn can_declare_global_var(self, agent: &mut Agent, name: String) -> JsResult<bool> {
+    pub(crate) fn can_declare_global_var(
+        self,
+        agent: Context<'_, '_, '_>,
+        name: String,
+    ) -> JsResult<bool> {
         let env_rec = &agent[self];
         // 1. Let ObjRec be envRec.[[ObjectRecord]].
         let obj_rec = env_rec.object_record;
@@ -489,7 +502,7 @@ impl GlobalEnvironmentIndex {
     /// called for the same argument N.
     pub(crate) fn can_declare_global_function(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
     ) -> JsResult<bool> {
         let env_rec = &agent[self];
@@ -529,7 +542,7 @@ impl GlobalEnvironmentIndex {
     /// reused and assumed to be initialized.
     pub(crate) fn create_global_var_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         is_deletable: bool,
     ) -> JsResult<()> {
@@ -571,7 +584,7 @@ impl GlobalEnvironmentIndex {
     /// already exists, it is replaced.
     pub(crate) fn create_global_function_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         name: String,
         value: Value,
         d: bool,

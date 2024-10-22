@@ -2,29 +2,22 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::ecmascript::abstract_operations::type_conversion::to_string;
-use crate::ecmascript::builders::builtin_function_builder::BuiltinFunctionBuilder;
-use crate::ecmascript::builtins::ordinary::get_prototype_from_constructor;
-use crate::ecmascript::builtins::ordinary::ordinary_object_create_with_intrinsics;
-use crate::ecmascript::builtins::primitive_objects::PrimitiveObject;
-use crate::ecmascript::builtins::primitive_objects::PrimitiveObjectData;
-use crate::ecmascript::builtins::ArgumentsList;
-use crate::ecmascript::builtins::Behaviour;
-use crate::ecmascript::builtins::Builtin;
-use crate::ecmascript::builtins::BuiltinIntrinsicConstructor;
-use crate::ecmascript::execution::Agent;
-use crate::ecmascript::execution::JsResult;
-use crate::ecmascript::execution::ProtoIntrinsics;
-use crate::ecmascript::execution::RealmIdentifier;
-use crate::ecmascript::types::Function;
-use crate::ecmascript::types::IntoObject;
-use crate::ecmascript::types::IntoValue;
-use crate::ecmascript::types::Object;
-use crate::ecmascript::types::String;
-use crate::ecmascript::types::Value;
-use crate::ecmascript::types::BUILTIN_STRING_MEMORY;
-use crate::heap::IntrinsicConstructorIndexes;
-use crate::SmallString;
+use crate::{
+    ecmascript::{
+        abstract_operations::type_conversion::to_string,
+        builders::builtin_function_builder::BuiltinFunctionBuilder,
+        builtins::{
+            ordinary::{get_prototype_from_constructor, ordinary_object_create_with_intrinsics},
+            primitive_objects::{PrimitiveObject, PrimitiveObjectData},
+            ArgumentsList, Behaviour, Builtin, BuiltinIntrinsicConstructor,
+        },
+        execution::{Agent, JsResult, ProtoIntrinsics, RealmIdentifier},
+        types::{Function, IntoObject, IntoValue, Object, String, Value, BUILTIN_STRING_MEMORY},
+    },
+    engine::context::Context,
+    heap::IntrinsicConstructorIndexes,
+    SmallString,
+};
 
 pub struct StringConstructor;
 
@@ -57,7 +50,7 @@ impl Builtin for StringRaw {
 }
 impl StringConstructor {
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -118,7 +111,7 @@ impl StringConstructor {
     /// This function may be called with any number of arguments which form
     /// the rest parameter `codeUnits`.
     fn from_char_code(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         code_units: ArgumentsList,
     ) -> JsResult<Value> {
@@ -156,7 +149,7 @@ impl StringConstructor {
     /// This function may be called with any number of arguments which form
     /// the rest parameter `codePoints`.
     fn from_code_point(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -172,11 +165,15 @@ impl StringConstructor {
         todo!()
     }
 
-    fn raw(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn raw(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let string_prototype = intrinsics.string_prototype();
 

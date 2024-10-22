@@ -23,6 +23,7 @@ use crate::{
         execution::{Agent, ExecutionContext},
         types::Value,
     },
+    engine::context::Context,
     engine::{ExecutionResult, SuspendedVm},
     heap::{CompactionLists, CreateHeapData, Heap, HeapMarkAndSweep, WorkQueues},
 };
@@ -55,7 +56,7 @@ impl AwaitReactionIdentifier {
 
     pub(crate) fn resume(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         reaction_type: PromiseReactionType,
         value: Value,
     ) {

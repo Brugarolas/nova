@@ -4,20 +4,24 @@
 
 use oxc_span::SourceType;
 
-use crate::ecmascript::{
-    builders::builtin_function_builder::BuiltinFunctionBuilder,
-    builtins::{
-        make_constructor, ordinary::get_prototype_from_constructor, ordinary_function_create,
-        set_function_name, ArgumentsList, Behaviour, Builtin, BuiltinIntrinsicConstructor,
-        ECMAScriptFunction, OrdinaryFunctionCreateParams,
+use crate::{
+    ecmascript::{
+        builders::builtin_function_builder::BuiltinFunctionBuilder,
+        builtins::{
+            make_constructor, ordinary::get_prototype_from_constructor, ordinary_function_create,
+            set_function_name, ArgumentsList, Behaviour, Builtin, BuiltinIntrinsicConstructor,
+            ECMAScriptFunction, OrdinaryFunctionCreateParams,
+        },
+        execution::{
+            agent::ExceptionType, Agent, EnvironmentIndex, JsResult, ProtoIntrinsics,
+            RealmIdentifier,
+        },
+        scripts_and_modules::source_code::SourceCode,
+        types::{Function, IntoObject, IntoValue, Object, String, Value, BUILTIN_STRING_MEMORY},
     },
-    execution::{
-        agent::ExceptionType, Agent, EnvironmentIndex, JsResult, ProtoIntrinsics, RealmIdentifier,
-    },
-    scripts_and_modules::source_code::SourceCode,
-    types::{Function, IntoObject, IntoValue, Object, String, Value, BUILTIN_STRING_MEMORY},
+    engine::context::Context,
+    heap::IntrinsicConstructorIndexes,
 };
-use crate::heap::IntrinsicConstructorIndexes;
 
 pub(crate) struct FunctionConstructor;
 
@@ -34,7 +38,7 @@ impl BuiltinIntrinsicConstructor for FunctionConstructor {
 
 impl FunctionConstructor {
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -68,7 +72,7 @@ impl FunctionConstructor {
         Ok(f.into_value())
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let function_prototype = intrinsics.function_prototype().into_object();
 
@@ -115,7 +119,7 @@ impl DynamicFunctionKind {
 ///
 /// NOTE: This implementation doesn't cover steps 30-32, those should be handled by the caller.
 pub(crate) fn create_dynamic_function(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     constructor: Function,
     kind: DynamicFunctionKind,
     parameter_args: &[Value],

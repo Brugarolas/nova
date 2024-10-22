@@ -18,6 +18,7 @@ use crate::{
             IntoFunction, IntoValue, Object, PropertyKey, String, Value, BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
 };
 
@@ -85,7 +86,11 @@ impl ArrayBufferPrototype {
     ///
     /// ArrayBuffer.prototype.byteLength is an accessor property whose set
     /// accessor function is undefined.
-    fn get_byte_length(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_byte_length(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let O be the this value.
         // 2. Perform ? RequireInternalSlot(O, [[ArrayBufferData]]).
         // 3. If IsSharedArrayBuffer(O) is true, throw a TypeError exception.
@@ -102,7 +107,11 @@ impl ArrayBufferPrototype {
     /// ### [25.1.6.3 get ArrayBuffer.prototype.detached](https://tc39.es/ecma262/#sec-get-arraybuffer.prototype.detached)
     ///
     /// ArrayBuffer.prototype.detached is an accessor property whose set accessor function is undefined.
-    fn get_detached(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_detached(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let O be the this value.
         // 2. Perform ? RequireInternalSlot(O, [[ArrayBufferData]]).
         // 3. If IsSharedArrayBuffer(O) is true, throw a TypeError exception.
@@ -115,7 +124,7 @@ impl ArrayBufferPrototype {
     ///
     /// ArrayBuffer.prototype.maxByteLength is an accessor property whose set accessor function is undefined.
     fn get_max_byte_length(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         _: ArgumentsList,
     ) -> JsResult<Value> {
@@ -135,7 +144,11 @@ impl ArrayBufferPrototype {
     /// ### [25.1.6.5 get ArrayBuffer.prototype.resizable](https://tc39.es/ecma262/#sec-get-arraybuffer.prototype.resizable)
     ///
     /// ArrayBuffer.prototype.resizable is an accessor property whose set accessor function is undefined.
-    fn get_resizable(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_resizable(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let O be the this value.
         // 2. Perform ? RequireInternalSlot(O, [[ArrayBufferData]]).
         // 3. If IsSharedArrayBuffer(O) is true, throw a TypeError exception.´
@@ -147,7 +160,11 @@ impl ArrayBufferPrototype {
     /// ### [25.1.6.6 ArrayBuffer.prototype.resize ( newLength )](https://tc39.es/ecma262/#sec-arraybuffer.prototype.resize)
     ///
     /// This method performs the following steps when called:
-    fn resize(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn resize(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let O be the this value.
         // 2. Perform ? RequireInternalSlot(O, [[ArrayBufferMaxByteLength]]).
         // 3. If IsSharedArrayBuffer(O) is true, throw a TypeError exception.´
@@ -196,7 +213,11 @@ impl ArrayBufferPrototype {
     /// ### [25.1.6.7 ArrayBuffer.prototype.slice ( start, end )](https://tc39.es/ecma262/#sec-arraybuffer.prototype.slice)
     ///
     /// This method performs the following steps when called:
-    fn slice(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn slice(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let O be the this value.
         // 2. Perform ? RequireInternalSlot(O, [[ArrayBufferData]]).
         // 3. If IsSharedArrayBuffer(O) is true, throw a TypeError exception.´
@@ -306,7 +327,11 @@ impl ArrayBufferPrototype {
     /// ### [25.1.6.8 ArrayBuffer.prototype.transfer ( [ newLength ] )](https://tc39.es/ecma262/#sec-arraybuffer.prototype.transfer)
     ///
     /// This method performs the following steps when called:
-    fn transfer(_agent: &mut Agent, _this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn transfer(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let O be the this value.
         // 2. Return ? ArrayBufferCopyAndDetach(O, newLength, preserve-resizability).
         todo!()
@@ -316,7 +341,7 @@ impl ArrayBufferPrototype {
     ///
     /// This method performs the following steps when called:
     fn transfer_to_fixed_length(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _: ArgumentsList,
     ) -> JsResult<Value> {
@@ -325,7 +350,7 @@ impl ArrayBufferPrototype {
         todo!()
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let object_prototype = intrinsics.object_prototype();
         let this = intrinsics.array_buffer_prototype();
@@ -356,7 +381,10 @@ impl ArrayBufferPrototype {
 }
 
 #[inline]
-fn require_internal_slot_array_buffer(agent: &mut Agent, o: Value) -> JsResult<ArrayBuffer> {
+fn require_internal_slot_array_buffer(
+    agent: Context<'_, '_, '_>,
+    o: Value,
+) -> JsResult<ArrayBuffer> {
     match o {
         // 1. Perform ? RequireInternalSlot(O, [[ArrayBufferData]]).
         // 2. If IsSharedArrayBuffer(O) is true, throw a TypeError exception.

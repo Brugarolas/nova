@@ -8,13 +8,14 @@ use crate::{
         execution::{Agent, RealmIdentifier},
         types::{IntoValue, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
 };
 
 pub(crate) struct GeneratorFunctionPrototype;
 
 impl GeneratorFunctionPrototype {
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let function_prototype = intrinsics.function_prototype();
         let generator_prototype = intrinsics.generator_prototype();

@@ -14,6 +14,7 @@ use crate::{
         },
         types::{Function, IntoValue, Object, Value},
     },
+    engine::context::Context,
     heap::CreateHeapData,
 };
 
@@ -30,7 +31,7 @@ pub(crate) struct PromiseResolveThenableJob {
     then: Function,
 }
 impl PromiseResolveThenableJob {
-    pub(crate) fn run(self, agent: &mut Agent) -> JsResult<()> {
+    pub(crate) fn run(self, agent: Context<'_, '_, '_>) -> JsResult<()> {
         // The following are substeps of point 1 in NewPromiseResolveThenableJob.
         // a. Let resolvingFunctions be CreateResolvingFunctions(promiseToResolve).
         let promise_capability = PromiseCapability::from_promise(self.promise_to_resolve, false);
@@ -74,7 +75,7 @@ impl PromiseResolveThenableJob {
 
 /// ### [27.2.2.2 NewPromiseResolveThenableJob ( promiseToResolve, thenable, then )](https://tc39.es/ecma262/#sec-newpromiseresolvethenablejob)
 pub(crate) fn new_promise_resolve_thenable_job(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     promise_to_resolve: Promise,
     thenable: Object,
     then: Function,
@@ -104,7 +105,7 @@ pub(crate) struct PromiseReactionJob {
     argument: Value,
 }
 impl PromiseReactionJob {
-    pub(crate) fn run(self, agent: &mut Agent) -> JsResult<()> {
+    pub(crate) fn run(self, agent: Context<'_, '_, '_>) -> JsResult<()> {
         // The following are substeps of point 1 in NewPromiseReactionJob.
         let handler_result = match agent[self.reaction].handler {
             PromiseReactionHandler::Empty => match agent[self.reaction].reaction_type {
@@ -163,7 +164,7 @@ impl PromiseReactionJob {
 
 /// ### [27.2.2.1 NewPromiseReactionJob ( reaction, argument )](https://tc39.es/ecma262/#sec-newpromisereactionjob)
 pub(crate) fn new_promise_reaction_job(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     reaction: PromiseReaction,
     argument: Value,
 ) -> Job {

@@ -16,6 +16,7 @@ use crate::{
         execution::{Agent, JsResult},
     },
     engine::{
+        context::Context,
         rootable::{HeapRootData, HeapRootRef, Rootable},
         small_f64::SmallF64,
     },
@@ -234,7 +235,7 @@ impl TryFrom<Numeric> for Number {
 }
 
 impl Number {
-    pub fn from_f64(agent: &mut Agent, value: f64) -> Self {
+    pub fn from_f64(agent: Context<'_, '_, '_>, value: f64) -> Self {
         if let Ok(value) = Number::try_from(value) {
             value
         } else {
@@ -369,7 +370,7 @@ impl Number {
     }
 
     /// https://tc39.es/ecma262/#eqn-truncate
-    pub fn truncate(self, agent: &mut Agent) -> Number {
+    pub fn truncate(self, agent: Context<'_, '_, '_>) -> Number {
         match self {
             Number::Number(n) => {
                 let n = agent[n].trunc();
@@ -479,7 +480,7 @@ impl Number {
         }
     }
 
-    pub fn is_odd_integer(self, agent: &mut Agent) -> bool {
+    pub fn is_odd_integer(self, agent: Context<'_, '_, '_>) -> bool {
         match self {
             Number::Number(n) => agent[n] % 2.0 == 1.0,
             Number::Integer(n) => Into::<i64>::into(n) % 2 == 1,
@@ -487,7 +488,7 @@ impl Number {
         }
     }
 
-    pub fn abs(self, agent: &mut Agent) -> Self {
+    pub fn abs(self, agent: Context<'_, '_, '_>) -> Self {
         match self {
             Number::Number(n) => {
                 let n = agent[n];
@@ -514,12 +515,12 @@ impl Number {
         }
     }
 
-    pub fn greater_than(agent: &mut Agent, x: Self, y: Self) -> Option<bool> {
+    pub fn greater_than(agent: Context<'_, '_, '_>, x: Self, y: Self) -> Option<bool> {
         Number::less_than(agent, y, x).map(|x| !x)
     }
 
     /// ### [6.1.6.1.1 Number::unaryMinus ( x )](https://tc39.es/ecma262/#sec-numeric-types-number-unaryMinus)
-    pub fn unary_minus(agent: &mut Agent, x: Self) -> Self {
+    pub fn unary_minus(agent: Context<'_, '_, '_>, x: Self) -> Self {
         // 1. If x is NaN, return NaN.
         // NOTE: Computers do this automatically.
 
@@ -550,7 +551,7 @@ impl Number {
     }
 
     /// ### [6.1.6.1.2 Number::bitwiseNOT ( x )](https://tc39.es/ecma262/#sec-numeric-types-number-bitwiseNOT)
-    pub fn bitwise_not(agent: &mut Agent, x: Self) -> JsResult<Self> {
+    pub fn bitwise_not(agent: Context<'_, '_, '_>, x: Self) -> JsResult<Self> {
         // 1. Let oldValue be ! ToInt32(x).
         let old_value = to_int32(agent, x.into_value())?;
 
@@ -559,7 +560,7 @@ impl Number {
     }
 
     /// ### [6.1.6.1.3 Number::exponentiate ( base, exponent )](https://tc39.es/ecma262/#sec-numeric-types-number-exponentiate)
-    pub fn exponentiate(agent: &mut Agent, base: Self, exponent: Self) -> Self {
+    pub fn exponentiate(agent: Context<'_, '_, '_>, base: Self, exponent: Self) -> Self {
         // 1. If exponent is NaN, return NaN.
         if exponent.is_nan(agent) {
             return Number::nan();
@@ -703,7 +704,7 @@ impl Number {
     ///
     /// > NOTE: Finite-precision multiplication is commutative, but not always
     /// > associative.
-    pub fn multiply(agent: &mut Agent, x: Self, y: Self) -> Self {
+    pub fn multiply(agent: Context<'_, '_, '_>, x: Self, y: Self) -> Self {
         // Nonstandard fast path: If both numbers are integers, use integer
         // multiplication and try to return a safe integer as integer.
         if let (Self::Integer(x), Self::Integer(y)) = (x, y) {
@@ -785,7 +786,7 @@ impl Number {
     /// the rules of IEEE 754-2019 binary double-precision arithmetic,
     /// producing the quotient of x and y where x is the dividend and y is the
     /// divisor.
-    pub fn divide(agent: &mut Agent, x: Self, y: Self) -> Self {
+    pub fn divide(agent: Context<'_, '_, '_>, x: Self, y: Self) -> Self {
         // 1. If x is NaN or y is NaN, return NaN.
         if x.is_nan(agent) || y.is_nan(agent) {
             return Number::nan();
@@ -871,7 +872,7 @@ impl Number {
     /// and d (a Number) and returns a Number. It yields the remainder from an
     /// implied division of its operands where n is the dividend and d is the
     /// divisor.
-    pub fn remainder(agent: &mut Agent, n: Self, d: Self) -> Self {
+    pub fn remainder(agent: Context<'_, '_, '_>, n: Self, d: Self) -> Self {
         // 1. If n is NaN or d is NaN, return NaN.
         if n.is_nan(agent) || d.is_nan(agent) {
             return Self::nan();
@@ -927,7 +928,7 @@ impl Number {
     /// (a Number) and returns a Number. It performs addition according to the
     /// rules of IEEE 754-2019 binary double-precision arithmetic, producing
     /// the sum of its arguments.
-    pub(crate) fn add(agent: &mut Agent, x: Number, y: Number) -> Number {
+    pub(crate) fn add(agent: Context<'_, '_, '_>, x: Number, y: Number) -> Number {
         // 1. If x is NaN or y is NaN, return NaN.
         if x.is_nan(agent) || y.is_nan(agent) {
             return Number::nan();
@@ -971,7 +972,7 @@ impl Number {
     /// and y (a Number) and returns a Number. It performs subtraction,
     /// producing the difference of its operands; x is the minuend and y is the
     /// subtrahend.
-    pub(crate) fn subtract(agent: &mut Agent, x: Number, y: Number) -> Number {
+    pub(crate) fn subtract(agent: Context<'_, '_, '_>, x: Number, y: Number) -> Number {
         // 1. Return Number::add(x, Number::unaryMinus(y)).
         let negated_y = Number::unary_minus(agent, y);
         Number::add(agent, x, negated_y)
@@ -981,7 +982,7 @@ impl Number {
     ///
     /// The abstract operation Number::signedRightShift takes arguments x
     /// (a Number) and y (a Number) and returns an integral Number.
-    pub fn left_shift(agent: &mut Agent, x: Self, y: Self) -> Self {
+    pub fn left_shift(agent: Context<'_, '_, '_>, x: Self, y: Self) -> Self {
         // 1. Let lnum be ! ToInt32(x).
         let lnum = to_int32(agent, x.into_value()).unwrap();
         // 2. Let rnum be ! ToUint32(y).
@@ -996,7 +997,7 @@ impl Number {
     ///
     /// The abstract operation Number::unsignedRightShift takes arguments x
     /// (a Number) and y (a Number) and returns an integral Number.
-    pub fn signed_right_shift(agent: &mut Agent, x: Self, y: Self) -> Self {
+    pub fn signed_right_shift(agent: Context<'_, '_, '_>, x: Self, y: Self) -> Self {
         // 1. Let lnum be ! ToInt32(x).
         let lnum = to_int32(agent, x.into_value()).unwrap();
         // 2. Let rnum be ! ToUint32(y).
@@ -1011,7 +1012,7 @@ impl Number {
     ///
     /// The abstract operation Number::lessThan takes arguments x (a Number)
     /// and y (a Number) and returns a Boolean or undefined.
-    pub fn unsigned_right_shift(agent: &mut Agent, x: Self, y: Self) -> Self {
+    pub fn unsigned_right_shift(agent: Context<'_, '_, '_>, x: Self, y: Self) -> Self {
         // 1. Let lnum be ! ToUint32(x).
         let lnum = to_uint32(agent, x.into_value()).unwrap();
         // 2. Let rnum be ! ToUint32(y).
@@ -1023,7 +1024,7 @@ impl Number {
     }
 
     /// ### [6.1.6.1.12 Number::lessThan ( x, y )](https://tc39.es/ecma262/#sec-numeric-types-number-lessThan)
-    pub fn less_than(agent: &mut Agent, x: Self, y: Self) -> Option<bool> {
+    pub fn less_than(agent: Context<'_, '_, '_>, x: Self, y: Self) -> Option<bool> {
         // 1. If x is NaN, return undefined.
         if x.is_nan(agent) {
             return None;
@@ -1171,7 +1172,7 @@ impl Number {
 
     /// ### [6.1.6.1.16 NumberBitwiseOp ( op, x, y )](https://tc39.es/ecma262/#sec-numberbitwiseop)
     #[inline(always)]
-    fn bitwise_op(agent: &mut Agent, op: BitwiseOp, x: Self, y: Self) -> JsResult<i32> {
+    fn bitwise_op(agent: Context<'_, '_, '_>, op: BitwiseOp, x: Self, y: Self) -> JsResult<i32> {
         // 1. Let lnum be ! ToInt32(x).
         let lnum = x.into_value().to_int32(agent)?;
 
@@ -1208,25 +1209,25 @@ impl Number {
     }
 
     /// ### [6.1.6.1.17 Number::bitwiseAND ( x, y )](https://tc39.es/ecma262/#sec-numeric-types-number-bitwiseAND)
-    pub fn bitwise_and(agent: &mut Agent, x: Self, y: Self) -> JsResult<i32> {
+    pub fn bitwise_and(agent: Context<'_, '_, '_>, x: Self, y: Self) -> JsResult<i32> {
         // 1. Return NumberBitwiseOp(&, x, y).
         Number::bitwise_op(agent, BitwiseOp::And, x, y)
     }
 
     /// ### [6.1.6.1.18 Number::bitwiseXOR ( x, y )](https://tc39.es/ecma262/#sec-numeric-types-number-bitwiseXOR)
-    pub fn bitwise_xor(agent: &mut Agent, x: Self, y: Self) -> JsResult<i32> {
+    pub fn bitwise_xor(agent: Context<'_, '_, '_>, x: Self, y: Self) -> JsResult<i32> {
         // 1. Return NumberBitwiseOp(^, x, y).
         Number::bitwise_op(agent, BitwiseOp::Xor, x, y)
     }
 
     /// ### [6.1.6.1.19 Number::bitwiseOR ( x, y )](https://tc39.es/ecma262/#sec-numeric-types-number-bitwiseOR)
-    pub fn bitwise_or(agent: &mut Agent, x: Self, y: Self) -> JsResult<i32> {
+    pub fn bitwise_or(agent: Context<'_, '_, '_>, x: Self, y: Self) -> JsResult<i32> {
         // 1. Return NumberBitwiseOp(|, x, y).
         Number::bitwise_op(agent, BitwiseOp::Or, x, y)
     }
 
     // ### [6.1.6.1.20 Number::toString ( x, radix )](https://tc39.es/ecma262/#sec-numeric-types-number-tostring)
-    pub(crate) fn to_string_radix_10(agent: &mut Agent, x: Self) -> String {
+    pub(crate) fn to_string_radix_10(agent: Context<'_, '_, '_>, x: Self) -> String {
         match x {
             Number::Number(_) => {
                 let mut buffer = ryu_js::Buffer::new();

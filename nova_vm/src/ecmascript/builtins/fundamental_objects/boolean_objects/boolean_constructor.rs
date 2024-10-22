@@ -2,26 +2,21 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::ecmascript::abstract_operations::type_conversion::to_boolean;
-use crate::ecmascript::builders::builtin_function_builder::BuiltinFunctionBuilder;
-use crate::ecmascript::builtins::ordinary::ordinary_create_from_constructor;
-use crate::ecmascript::builtins::primitive_objects::PrimitiveObject;
-use crate::ecmascript::builtins::primitive_objects::PrimitiveObjectData;
-use crate::ecmascript::builtins::ArgumentsList;
-use crate::ecmascript::builtins::Behaviour;
-use crate::ecmascript::builtins::Builtin;
-use crate::ecmascript::builtins::BuiltinIntrinsicConstructor;
-use crate::ecmascript::execution::Agent;
-use crate::ecmascript::execution::JsResult;
-use crate::ecmascript::execution::ProtoIntrinsics;
-use crate::ecmascript::execution::RealmIdentifier;
-use crate::ecmascript::types::Function;
-use crate::ecmascript::types::IntoObject;
-use crate::ecmascript::types::IntoValue;
-use crate::ecmascript::types::Object;
-use crate::ecmascript::types::BUILTIN_STRING_MEMORY;
-use crate::ecmascript::types::{String, Value};
-use crate::heap::IntrinsicConstructorIndexes;
+use crate::{
+    ecmascript::{
+        abstract_operations::type_conversion::to_boolean,
+        builders::builtin_function_builder::BuiltinFunctionBuilder,
+        builtins::{
+            ordinary::ordinary_create_from_constructor,
+            primitive_objects::{PrimitiveObject, PrimitiveObjectData},
+            ArgumentsList, Behaviour, Builtin, BuiltinIntrinsicConstructor,
+        },
+        execution::{Agent, JsResult, ProtoIntrinsics, RealmIdentifier},
+        types::{Function, IntoObject, IntoValue, Object, String, Value, BUILTIN_STRING_MEMORY},
+    },
+    engine::context::Context,
+    heap::IntrinsicConstructorIndexes,
+};
 
 pub(crate) struct BooleanConstructor;
 
@@ -38,7 +33,7 @@ impl BuiltinIntrinsicConstructor for BooleanConstructor {
 
 impl BooleanConstructor {
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -59,7 +54,7 @@ impl BooleanConstructor {
         Ok(o.into_value())
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let boolean_prototype = intrinsics.boolean_prototype();
 

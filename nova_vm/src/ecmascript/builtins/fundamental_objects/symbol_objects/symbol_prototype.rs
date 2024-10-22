@@ -11,6 +11,7 @@ use crate::{
             IntoValue, PropertyKey, String, Symbol, SymbolHeapData, Value, BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
 };
 
@@ -68,7 +69,11 @@ impl SymbolPrototype {
     ///
     /// Symbol.prototype.description is an accessor property whose set accessor
     /// function is undefined.
-    fn get_description(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn get_description(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let s be the this value.
         // 2. Let sym be ? ThisSymbolValue(s).
         let sym = this_symbol_value(agent, this_value)?;
@@ -78,16 +83,24 @@ impl SymbolPrototype {
             .map_or_else(|| Ok(Value::Undefined), |desc| Ok(desc.into_value()))
     }
 
-    fn to_string(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn to_string(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         let symb = this_symbol_value(agent, this_value)?;
         Ok(symbol_descriptive_string(agent, symb).into_value())
     }
 
-    fn value_of(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn value_of(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         this_symbol_value(agent, this_value).map(|res| res.into_value())
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let object_prototype = intrinsics.object_prototype();
         let this = intrinsics.symbol_prototype();
@@ -158,7 +171,7 @@ impl SymbolPrototype {
 }
 
 #[inline(always)]
-fn this_symbol_value(agent: &mut Agent, value: Value) -> JsResult<Symbol> {
+fn this_symbol_value(agent: Context<'_, '_, '_>, value: Value) -> JsResult<Symbol> {
     match value {
         Value::Symbol(symbol) => Ok(symbol),
         Value::PrimitiveObject(object) if object.is_symbol_object(agent) => {
@@ -174,7 +187,7 @@ fn this_symbol_value(agent: &mut Agent, value: Value) -> JsResult<Symbol> {
 ///
 /// The abstract operation SymbolDescriptiveString takes argument sym (a Symbol)
 /// and returns a String.
-fn symbol_descriptive_string(agent: &mut Agent, sym: Symbol) -> String {
+fn symbol_descriptive_string(agent: Context<'_, '_, '_>, sym: Symbol) -> String {
     // 1. Let desc be sym's [[Description]] value.
     let desc = agent[sym].descriptor;
     // 2. If desc is undefined, set desc to the empty String.

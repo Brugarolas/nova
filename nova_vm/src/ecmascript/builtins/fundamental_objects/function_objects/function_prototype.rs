@@ -23,6 +23,7 @@ use crate::{
             OrdinaryObject, PropertyKey, String, Value, BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::{
         CreateHeapData, IntrinsicConstructorIndexes, IntrinsicFunctionIndexes, ObjectEntry,
         ObjectEntryPropertyDescriptor, WellKnownSymbolIndexes,
@@ -102,7 +103,11 @@ impl FunctionPrototype {
     }
 
     /// ### [20.2.3.1 Function.prototype.apply ( thisArg, argArray )](https://tc39.es/ecma262/#sec-function.prototype.apply)
-    fn apply(agent: &mut Agent, this_value: Value, args: ArgumentsList) -> JsResult<Value> {
+    fn apply(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        args: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let func be the this value.
         let Some(func) = is_callable(this_value) else {
             // 2. If IsCallable(func) is false, throw a TypeError exception.
@@ -139,7 +144,7 @@ impl FunctionPrototype {
     /// > If `Target` is either an arrow function or a bound function exotic
     /// > object, then the `thisArg` passed to this method will not be used by
     /// > subsequent calls to `F`.
-    fn bind(agent: &mut Agent, this_value: Value, args: ArgumentsList) -> JsResult<Value> {
+    fn bind(agent: Context<'_, '_, '_>, this_value: Value, args: ArgumentsList) -> JsResult<Value> {
         let this_arg = args.get(0);
         let args = if args.len() > 1 { &args[1..] } else { &[] };
         // 1. Let Target be the this value.
@@ -218,7 +223,7 @@ impl FunctionPrototype {
         Ok(f.into_value())
     }
 
-    fn call(agent: &mut Agent, this_value: Value, args: ArgumentsList) -> JsResult<Value> {
+    fn call(agent: Context<'_, '_, '_>, this_value: Value, args: ArgumentsList) -> JsResult<Value> {
         let Some(func) = is_callable(this_value) else {
             return Err(agent.throw_exception_with_static_message(
                 ExceptionType::TypeError,
@@ -231,7 +236,11 @@ impl FunctionPrototype {
         call_function(agent, func, this_arg, Some(args))
     }
 
-    fn to_string(agent: &mut Agent, this_value: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn to_string(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        _: ArgumentsList,
+    ) -> JsResult<Value> {
         // Let func be the this value.
         let Ok(func) = Function::try_from(this_value) else {
             // 5. Throw a TypeError exception.
@@ -300,13 +309,17 @@ impl FunctionPrototype {
         // <?:...> is an optional template part.
     }
 
-    fn has_instance(agent: &mut Agent, this_value: Value, args: ArgumentsList) -> JsResult<Value> {
+    fn has_instance(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        args: ArgumentsList,
+    ) -> JsResult<Value> {
         let v = args.get(0);
         let f = this_value;
         ordinary_has_instance(agent, f, v).map(|result| result.into())
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         ThrowTypeError::create_intrinsic(agent, realm);
 
         let intrinsics = agent.get_realm(realm).intrinsics();
@@ -363,11 +376,11 @@ impl BuiltinIntrinsic for ThrowTypeError {
 }
 
 impl ThrowTypeError {
-    fn behaviour(agent: &mut Agent, _: Value, _: ArgumentsList) -> JsResult<Value> {
+    fn behaviour(agent: Context<'_, '_, '_>, _: Value, _: ArgumentsList) -> JsResult<Value> {
         Err(agent.throw_exception_with_static_message(ExceptionType::TypeError, "'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them"))
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let throw_type_error =
             BuiltinFunctionBuilder::new_intrinsic_function::<ThrowTypeError>(agent, realm).build();
         let backing_object = create_throw_type_error_backing_object(agent, realm);
@@ -376,7 +389,7 @@ impl ThrowTypeError {
 }
 
 fn create_throw_type_error_backing_object(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     realm: RealmIdentifier,
 ) -> OrdinaryObject {
     let prototype = agent

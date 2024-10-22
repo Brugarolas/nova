@@ -6,14 +6,14 @@ use crate::{
     ecmascript::{
         abstract_operations::{operations_on_objects::set, type_conversion::to_object},
         execution::{
-            agent::{self, ExceptionType},
+            agent::{ExceptionType, JsResult},
             get_global_object, EnvironmentIndex,
         },
         types::{InternalMethods, Object, PropertyKey, String, Value},
     },
+    engine::context::Context,
     heap::{CompactionLists, HeapMarkAndSweep, WorkQueues},
 };
-use agent::{Agent, JsResult};
 
 /// ### [6.2.5 The Reference Record Specification Type](https://tc39.es/ecma262/#sec-reference-record-specification-type)
 ///
@@ -98,7 +98,7 @@ pub(crate) fn is_private_reference(_: &Reference) -> bool {
 /// The abstract operation GetValue takes argument V (a Reference Record or an
 /// ECMAScript language value) and returns either a normal completion
 /// containing an ECMAScript language value or an abrupt completion.
-pub(crate) fn get_value(agent: &mut Agent, reference: &Reference) -> JsResult<Value> {
+pub(crate) fn get_value(agent: Context<'_, '_, '_>, reference: &Reference) -> JsResult<Value> {
     let referenced_name = reference.referenced_name;
     match reference.base {
         Base::Value(value) => {
@@ -197,7 +197,7 @@ pub(crate) fn get_value(agent: &mut Agent, reference: &Reference) -> JsResult<Va
 /// The abstract operation PutValue takes arguments V (a Reference Record or an
 /// ECMAScript language value) and W (an ECMAScript language value) and returns
 /// either a normal completion containing UNUSED or an abrupt completion.
-pub(crate) fn put_value(agent: &mut Agent, v: &Reference, w: Value) -> JsResult<()> {
+pub(crate) fn put_value(agent: Context<'_, '_, '_>, v: &Reference, w: Value) -> JsResult<()> {
     // 1. If V is not a Reference Record, throw a ReferenceError exception.
     // 2. If IsUnresolvableReference(V) is true, then
     if is_unresolvable_reference(v) {
@@ -270,7 +270,7 @@ pub(crate) fn put_value(agent: &mut Agent, v: &Reference, w: Value) -> JsResult<
 /// (an ECMAScript language value) and returns either a normal completion containing unused or an
 /// abrupt completion.
 pub(crate) fn initialize_referenced_binding(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     v: Reference,
     w: Value,
 ) -> JsResult<()> {

@@ -11,19 +11,20 @@ mod data;
 
 use std::ops::{Index, IndexMut, RangeInclusive};
 
-use super::{array_set_length, ordinary::ordinary_define_own_property};
 use crate::{
     ecmascript::{
         abstract_operations::{
             operations_on_objects::{call_function, create_array_from_list},
             testing_and_comparison::same_value,
         },
+        builtins::{array_set_length, ordinary::ordinary_define_own_property},
         execution::{Agent, JsResult, ProtoIntrinsics},
         types::{
             InternalMethods, InternalSlots, IntoObject, IntoValue, Object, OrdinaryObject,
             PropertyDescriptor, PropertyKey, Value, BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::{
         element_array::{ElementArrays, ElementDescriptor},
         indexes::ArrayIndex,
@@ -50,7 +51,7 @@ impl Array {
     /// This is equal to the [CreateArrayFromList](https://tc39.es/ecma262/#sec-createarrayfromlist)
     /// abstract operation.
     #[inline]
-    pub fn from_slice(agent: &mut Agent, elements: &[Value]) -> Self {
+    pub fn from_slice(agent: Context<'_, '_, '_>, elements: &[Value]) -> Self {
         create_array_from_list(agent, elements)
     }
 
@@ -83,7 +84,7 @@ impl Array {
     #[inline]
     fn internal_get_backing(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         receiver: Value,
     ) -> JsResult<Value> {
@@ -106,7 +107,7 @@ impl Array {
     }
 
     #[inline]
-    pub(crate) fn as_mut_slice(self, agent: &mut Agent) -> &mut [Option<Value>] {
+    pub(crate) fn as_mut_slice(self, agent: Context<'_, '_, '_>) -> &mut [Option<Value>] {
         let elements = agent[self].elements;
         &mut agent[elements]
     }
@@ -172,11 +173,11 @@ impl InternalSlots for Array {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 
-    fn internal_set_extensible(self, agent: &mut Agent, value: bool) {
+    fn internal_set_extensible(self, agent: Context<'_, '_, '_>, value: bool) {
         agent[self].elements.len_writable = value;
         if let Some(object_index) = self.get_backing_object(agent) {
             object_index.internal_set_extensible(agent, value)
@@ -186,7 +187,7 @@ impl InternalSlots for Array {
         }
     }
 
-    fn internal_set_prototype(self, agent: &mut Agent, prototype: Option<Object>) {
+    fn internal_set_prototype(self, agent: Context<'_, '_, '_>, prototype: Option<Object>) {
         if let Some(object_index) = self.get_backing_object(agent) {
             object_index.internal_set_prototype(agent, prototype)
         } else {
@@ -205,7 +206,7 @@ impl InternalSlots for Array {
 impl InternalMethods for Array {
     fn internal_get_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
     ) -> JsResult<Option<PropertyDescriptor>> {
         if let PropertyKey::Integer(index) = property_key {
@@ -257,7 +258,7 @@ impl InternalMethods for Array {
 
     fn internal_define_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         property_descriptor: PropertyDescriptor,
     ) -> JsResult<bool> {
@@ -332,7 +333,11 @@ impl InternalMethods for Array {
         }
     }
 
-    fn internal_has_property(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_has_property(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         let has_own = self.internal_get_own_property(agent, property_key)?;
         if has_own.is_some() {
             return Ok(true);
@@ -353,7 +358,7 @@ impl InternalMethods for Array {
 
     fn internal_get(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         receiver: Value,
     ) -> JsResult<Value> {
@@ -405,7 +410,11 @@ impl InternalMethods for Array {
         }
     }
 
-    fn internal_delete(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_delete(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         if property_key == PropertyKey::from(BUILTIN_STRING_MEMORY.length) {
             Ok(true)
         } else if let PropertyKey::Integer(index) = property_key {
@@ -446,7 +455,7 @@ impl InternalMethods for Array {
         }
     }
 
-    fn internal_own_property_keys(self, agent: &mut Agent) -> JsResult<Vec<PropertyKey>> {
+    fn internal_own_property_keys(self, agent: Context<'_, '_, '_>) -> JsResult<Vec<PropertyKey>> {
         let backing_keys = if let Some(backing_object) = self.get_backing_object(agent) {
             backing_object.internal_own_property_keys(agent)?
         } else {
@@ -521,7 +530,7 @@ impl HeapMarkAndSweep for Array {
 }
 
 fn ordinary_define_own_property_for_array(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     elements: SealableElementsVector,
     index: u32,
     descriptor: PropertyDescriptor,

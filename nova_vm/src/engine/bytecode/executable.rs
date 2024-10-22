@@ -105,7 +105,7 @@ pub(crate) struct ExecutableHeapData {
 }
 
 impl Executable {
-    pub(crate) fn compile_script(agent: &mut Agent, script: ScriptIdentifier) -> Self {
+    pub(crate) fn compile_script(agent: Context<'_, '_, '_>, script: ScriptIdentifier) -> Self {
         if agent.options.print_internals {
             eprintln!();
             eprintln!("=== Compiling Script ===");
@@ -123,7 +123,7 @@ impl Executable {
     }
 
     pub(crate) fn compile_function_body(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         data: CompileFunctionBodyData<'_>,
     ) -> Self {
         let mut ctx = CompileContext::new(agent);
@@ -139,7 +139,7 @@ impl Executable {
         ctx.finish()
     }
 
-    pub(crate) fn compile_eval_body(agent: &mut Agent, body: &[Statement]) -> Self {
+    pub(crate) fn compile_eval_body(agent: Context<'_, '_, '_>, body: &[Statement]) -> Self {
         if agent.options.print_internals {
             eprintln!();
             eprintln!("=== Compiling Eval Body ===");
@@ -158,7 +158,7 @@ impl Executable {
     ///
     /// Any attempt to use the Executable after this call will lead to a crash
     /// if the drop was performed.
-    pub(crate) unsafe fn try_drop(self, agent: &mut Agent) {
+    pub(crate) unsafe fn try_drop(self, agent: Context<'_, '_, '_>) {
         debug_assert!(!agent.heap.executables.is_empty());
         let index = self.get_index();
         let last_index = agent.heap.executables.len() - 1;
@@ -275,7 +275,10 @@ impl ExecutableHeapData {
         get_instruction(&self.instructions, ip)
     }
 
-    pub(crate) fn compile_script(agent: &mut Agent, script: ScriptIdentifier) -> Executable {
+    pub(crate) fn compile_script(
+        agent: Context<'_, '_, '_>,
+        script: ScriptIdentifier,
+    ) -> Executable {
         if agent.options.print_internals {
             eprintln!();
             eprintln!("=== Compiling Script ===");
@@ -293,7 +296,7 @@ impl ExecutableHeapData {
     }
 
     pub(crate) fn compile_function_body(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         data: CompileFunctionBodyData<'_>,
     ) -> Executable {
         let mut ctx = CompileContext::new(agent);
@@ -309,7 +312,7 @@ impl ExecutableHeapData {
         ctx.finish()
     }
 
-    pub(crate) fn compile_eval_body(agent: &mut Agent, body: &[Statement]) -> Executable {
+    pub(crate) fn compile_eval_body(agent: Context<'_, '_, '_>, body: &[Statement]) -> Executable {
         if agent.options.print_internals {
             eprintln!();
             eprintln!("=== Compiling Eval Body ===");

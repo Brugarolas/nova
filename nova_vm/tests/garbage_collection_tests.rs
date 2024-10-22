@@ -9,7 +9,7 @@ use nova_vm::ecmascript::{
     types::{Object, String, Value},
 };
 
-fn initialize_global_object(agent: &mut Agent, global: Object) {
+fn initialize_global_object(agent: Context<'_, '_, '_>, global: Object) {
     use nova_vm::ecmascript::{
         builtins::{create_builtin_function, ArgumentsList, Behaviour, BuiltinFunctionArgs},
         execution::JsResult,
@@ -17,7 +17,7 @@ fn initialize_global_object(agent: &mut Agent, global: Object) {
     };
 
     // `print` function
-    fn print(agent: &mut Agent, _this: Value, args: ArgumentsList) -> JsResult<Value> {
+    fn print(agent: Context<'_, '_, '_>, _this: Value, args: ArgumentsList) -> JsResult<Value> {
         if args.len() == 0 {
             println!();
         } else {

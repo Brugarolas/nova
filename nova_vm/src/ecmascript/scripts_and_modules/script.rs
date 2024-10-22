@@ -19,7 +19,7 @@ use crate::{
         },
         types::{IntoValue, String, Value, BUILTIN_STRING_MEMORY},
     },
-    engine::{Executable, Vm},
+    engine::{context::Context, Executable, Vm},
     heap::{CompactionLists, HeapMarkAndSweep, WorkQueues},
 };
 use ahash::AHashSet;
@@ -198,7 +198,7 @@ impl HeapMarkAndSweep for Script {
 /// creates a Script Record based upon the result of parsing sourceText as a
 /// Script.
 pub fn parse_script(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     source_text: String,
     realm: RealmIdentifier,
     strict_mode: bool,
@@ -248,7 +248,7 @@ pub fn parse_script(
 /// The abstract operation ScriptEvaluation takes argument scriptRecord (a
 /// Script Record) and returns either a normal completion containing an
 /// ECMAScript language value or an abrupt completion.
-pub fn script_evaluation(agent: &mut Agent, script: Script) -> JsResult<Value> {
+pub fn script_evaluation(agent: Context<'_, '_, '_>, script: Script) -> JsResult<Value> {
     let realm_id = script.realm;
     let is_strict_mode = script.ecmascript_code.is_strict();
     let source_code = script.source_code;
@@ -334,7 +334,7 @@ pub fn script_evaluation(agent: &mut Agent, script: Script) -> JsResult<Value> {
 /// script is the Script for which the execution context is being established.
 /// env is the global environment in which bindings are to be created.
 pub(crate) fn global_declaration_instantiation(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     script: ScriptIdentifier,
     env: GlobalEnvironmentIndex,
 ) -> JsResult<()> {

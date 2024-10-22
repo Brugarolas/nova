@@ -10,6 +10,7 @@ use crate::{
         execution::Agent,
         types::{OrdinaryObject, Value},
     },
+    engine::context::Context,
     heap::{CompactionLists, HeapMarkAndSweep, WorkQueues},
 };
 
@@ -55,7 +56,7 @@ pub(crate) enum PromiseReactions {
 
 impl PromiseReactions {
     /// ### [27.2.1.8 TriggerPromiseReactions ( reactions, argument )](https://tc39.es/ecma262/#sec-triggerpromisereactions)
-    pub(crate) fn trigger(&self, agent: &mut Agent, argument: Value) {
+    pub(crate) fn trigger(&self, agent: Context<'_, '_, '_>, argument: Value) {
         match self {
             PromiseReactions::One(reaction) => {
                 let job = new_promise_reaction_job(agent, *reaction, argument);

@@ -35,7 +35,7 @@ impl VmIterator {
     /// function implements much the same intent. It does the IteratorNext
     /// step, followed by a completion check, and finally extracts the value
     /// if the iterator did not complete yet.
-    pub(super) fn step_value(&mut self, agent: &mut Agent) -> JsResult<Option<Value>> {
+    pub(super) fn step_value(&mut self, agent: Context<'_, '_, '_>) -> JsResult<Option<Value>> {
         match self {
             VmIterator::ObjectProperties(iter) => {
                 let result = iter.next(agent)?;
@@ -85,7 +85,7 @@ impl VmIterator {
         }
     }
 
-    pub(super) fn remaining_length_estimate(&self, agent: &mut Agent) -> Option<usize> {
+    pub(super) fn remaining_length_estimate(&self, agent: Context<'_, '_, '_>) -> Option<usize> {
         match self {
             VmIterator::ObjectProperties(iter) => Some(iter.remaining_keys.len()),
             VmIterator::ArrayValues(iter) => {
@@ -96,7 +96,7 @@ impl VmIterator {
         }
     }
 
-    pub(super) fn from_value(agent: &mut Agent, value: Value) -> JsResult<Self> {
+    pub(super) fn from_value(agent: Context<'_, '_, '_>, value: Value) -> JsResult<Self> {
         // a. Let method be ? GetMethod(obj, %Symbol.iterator%).
         let method = get_method(
             agent,
@@ -154,7 +154,7 @@ impl ObjectPropertiesIterator {
         }
     }
 
-    pub(super) fn next(&mut self, agent: &mut Agent) -> JsResult<Option<PropertyKey>> {
+    pub(super) fn next(&mut self, agent: Context<'_, '_, '_>) -> JsResult<Option<PropertyKey>> {
         loop {
             let object = self.object;
             if !self.object_was_visited {
@@ -206,7 +206,7 @@ impl ArrayValuesIterator {
         }
     }
 
-    pub(super) fn next(&mut self, agent: &mut Agent) -> JsResult<Option<Value>> {
+    pub(super) fn next(&mut self, agent: Context<'_, '_, '_>) -> JsResult<Option<Value>> {
         // b. Repeat,
         let array = self.array;
         // iv. Let indexNumber be 𝔽(index).

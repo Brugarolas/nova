@@ -19,6 +19,7 @@ use crate::{
             OrdinaryObject, PropertyDescriptor, PropertyKey, String, Value, BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::{
         indexes::BuiltinFunctionIndex, CompactionLists, CreateHeapData, Heap, HeapMarkAndSweep,
         IntrinsicConstructorIndexes, IntrinsicFunctionIndexes, ObjectEntry,
@@ -221,11 +222,11 @@ impl InternalSlots for BuiltinFunction {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 
-    fn create_backing_object(self, agent: &mut Agent) -> OrdinaryObject {
+    fn create_backing_object(self, agent: Context<'_, '_, '_>) -> OrdinaryObject {
         function_create_backing_object(self, agent)
     }
 }
@@ -233,7 +234,7 @@ impl InternalSlots for BuiltinFunction {
 impl InternalMethods for BuiltinFunction {
     fn internal_get_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
     ) -> JsResult<Option<PropertyDescriptor>> {
         function_internal_get_own_property(self, agent, property_key)
@@ -241,20 +242,24 @@ impl InternalMethods for BuiltinFunction {
 
     fn internal_define_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         property_descriptor: PropertyDescriptor,
     ) -> JsResult<bool> {
         function_internal_define_own_property(self, agent, property_key, property_descriptor)
     }
 
-    fn internal_has_property(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_has_property(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         function_internal_has_property(self, agent, property_key)
     }
 
     fn internal_get(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         receiver: Value,
     ) -> JsResult<Value> {
@@ -263,7 +268,7 @@ impl InternalMethods for BuiltinFunction {
 
     fn internal_set(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         value: Value,
         receiver: Value,
@@ -271,11 +276,15 @@ impl InternalMethods for BuiltinFunction {
         function_internal_set(self, agent, property_key, value, receiver)
     }
 
-    fn internal_delete(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_delete(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         function_internal_delete(self, agent, property_key)
     }
 
-    fn internal_own_property_keys(self, agent: &mut Agent) -> JsResult<Vec<PropertyKey>> {
+    fn internal_own_property_keys(self, agent: Context<'_, '_, '_>) -> JsResult<Vec<PropertyKey>> {
         function_internal_own_property_keys(self, agent)
     }
 
@@ -288,7 +297,7 @@ impl InternalMethods for BuiltinFunction {
     /// completion.
     fn internal_call(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_argument: Value,
         arguments_list: ArgumentsList,
     ) -> JsResult<Value> {
@@ -304,7 +313,7 @@ impl InternalMethods for BuiltinFunction {
     /// either a normal completion containing an Object or a throw completion.
     fn internal_construct(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         arguments_list: ArgumentsList,
         new_target: Function,
     ) -> JsResult<Object> {
@@ -322,7 +331,7 @@ impl InternalMethods for BuiltinFunction {
 /// newTarget (a constructor or undefined) and returns either a normal
 /// completion containing an ECMAScript language value or a throw completion.
 pub(crate) fn builtin_call_or_construct(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     f: BuiltinFunction,
     this_argument: Option<Value>,
     arguments_list: ArgumentsList,
@@ -406,7 +415,7 @@ pub(crate) fn builtin_call_or_construct(
 /// that must be defined as part of the object. This operation creates a
 /// built-in function object.
 pub fn create_builtin_function(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     behaviour: Behaviour,
     args: BuiltinFunctionArgs,
 ) -> BuiltinFunction {
@@ -497,7 +506,7 @@ pub fn create_builtin_function(
 }
 
 pub fn define_builtin_function(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     _object: Object,
     name: &'static str,
     behaviour: RegularFn,

@@ -309,7 +309,7 @@ impl InternalSlots for OrdinaryObject {
         Some(self)
     }
 
-    fn set_backing_object(self, _agent: &mut Agent, _backing_object: OrdinaryObject) {
+    fn set_backing_object(self, _agent: Context<'_, '_, '_>, _backing_object: OrdinaryObject) {
         unreachable!();
     }
 
@@ -321,7 +321,7 @@ impl InternalSlots for OrdinaryObject {
         agent[self].extensible
     }
 
-    fn internal_set_extensible(self, agent: &mut Agent, value: bool) {
+    fn internal_set_extensible(self, agent: Context<'_, '_, '_>, value: bool) {
         agent[self].extensible = value;
     }
 
@@ -329,7 +329,7 @@ impl InternalSlots for OrdinaryObject {
         agent[self].prototype
     }
 
-    fn internal_set_prototype(self, agent: &mut Agent, prototype: Option<Object>) {
+    fn internal_set_prototype(self, agent: Context<'_, '_, '_>, prototype: Option<Object>) {
         agent[self].prototype = prototype;
     }
 }
@@ -610,7 +610,7 @@ impl InternalSlots for Object {
         unreachable!("Object should not try to access its backing object");
     }
 
-    fn set_backing_object(self, _agent: &mut Agent, _backing_object: OrdinaryObject) {
+    fn set_backing_object(self, _agent: Context<'_, '_, '_>, _backing_object: OrdinaryObject) {
         unreachable!("Object should not try to create its backing object");
     }
 
@@ -693,7 +693,7 @@ impl InternalSlots for Object {
         }
     }
 
-    fn internal_set_extensible(self, agent: &mut Agent, value: bool) {
+    fn internal_set_extensible(self, agent: Context<'_, '_, '_>, value: bool) {
         match self {
             Object::Object(data) => data.internal_set_extensible(agent, value),
             Object::Array(data) => data.internal_set_extensible(agent, value),
@@ -861,7 +861,7 @@ impl InternalSlots for Object {
         }
     }
 
-    fn internal_set_prototype(self, agent: &mut Agent, prototype: Option<Object>) {
+    fn internal_set_prototype(self, agent: Context<'_, '_, '_>, prototype: Option<Object>) {
         match self {
             Object::Object(data) => data.internal_set_prototype(agent, prototype),
             Object::Array(data) => data.internal_set_prototype(agent, prototype),
@@ -958,7 +958,7 @@ impl InternalSlots for Object {
 }
 
 impl InternalMethods for Object {
-    fn internal_get_prototype_of(self, agent: &mut Agent) -> JsResult<Option<Object>> {
+    fn internal_get_prototype_of(self, agent: Context<'_, '_, '_>) -> JsResult<Option<Object>> {
         match self {
             Object::Object(data) => data.internal_get_prototype_of(agent),
             Object::Array(data) => data.internal_get_prototype_of(agent),
@@ -1049,7 +1049,7 @@ impl InternalMethods for Object {
 
     fn internal_set_prototype_of(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         prototype: Option<Object>,
     ) -> JsResult<bool> {
         match self {
@@ -1146,7 +1146,7 @@ impl InternalMethods for Object {
         }
     }
 
-    fn internal_is_extensible(self, agent: &mut Agent) -> JsResult<bool> {
+    fn internal_is_extensible(self, agent: Context<'_, '_, '_>) -> JsResult<bool> {
         match self {
             Object::Object(data) => data.internal_is_extensible(agent),
             Object::Array(data) => data.internal_is_extensible(agent),
@@ -1229,7 +1229,7 @@ impl InternalMethods for Object {
         }
     }
 
-    fn internal_prevent_extensions(self, agent: &mut Agent) -> JsResult<bool> {
+    fn internal_prevent_extensions(self, agent: Context<'_, '_, '_>) -> JsResult<bool> {
         match self {
             Object::Object(data) => data.internal_prevent_extensions(agent),
             Object::Array(data) => data.internal_prevent_extensions(agent),
@@ -1324,7 +1324,7 @@ impl InternalMethods for Object {
 
     fn internal_get_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
     ) -> JsResult<Option<PropertyDescriptor>> {
         match self {
@@ -1425,7 +1425,7 @@ impl InternalMethods for Object {
 
     fn internal_define_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         property_descriptor: PropertyDescriptor,
     ) -> JsResult<bool> {
@@ -1578,7 +1578,7 @@ impl InternalMethods for Object {
         }
     }
 
-    fn internal_has_property(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_has_property(self, agent: Context<'_, '_, '_>, property_key: PropertyKey) -> JsResult<bool> {
         match self {
             Object::Object(data) => data.internal_has_property(agent, property_key),
             Object::Array(data) => data.internal_has_property(agent, property_key),
@@ -1675,7 +1675,7 @@ impl InternalMethods for Object {
 
     fn internal_get(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         receiver: Value,
     ) -> JsResult<Value> {
@@ -1775,7 +1775,7 @@ impl InternalMethods for Object {
 
     fn internal_set(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         value: Value,
         receiver: Value,
@@ -1887,7 +1887,7 @@ impl InternalMethods for Object {
         }
     }
 
-    fn internal_delete(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_delete(self, agent: Context<'_, '_, '_>, property_key: PropertyKey) -> JsResult<bool> {
         match self {
             Object::Object(data) => data.internal_delete(agent, property_key),
             Object::Array(data) => data.internal_delete(agent, property_key),
@@ -1980,7 +1980,7 @@ impl InternalMethods for Object {
         }
     }
 
-    fn internal_own_property_keys(self, agent: &mut Agent) -> JsResult<Vec<PropertyKey>> {
+    fn internal_own_property_keys(self, agent: Context<'_, '_, '_>) -> JsResult<Vec<PropertyKey>> {
         match self {
             Object::Object(data) => data.internal_own_property_keys(agent),
             Object::Array(data) => data.internal_own_property_keys(agent),
@@ -2073,7 +2073,7 @@ impl InternalMethods for Object {
 
     fn internal_call(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         arguments_list: ArgumentsList,
     ) -> JsResult<Value> {
@@ -2090,7 +2090,7 @@ impl InternalMethods for Object {
 
     fn internal_construct(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         arguments_list: ArgumentsList,
         new_target: Function,
     ) -> JsResult<Object> {

@@ -2,33 +2,25 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::ecmascript::abstract_operations::testing_and_comparison::is_integral_number;
-use crate::ecmascript::builders::builtin_function_builder::BuiltinFunctionBuilder;
-use crate::ecmascript::builtins::ordinary::ordinary_create_from_constructor;
-use crate::ecmascript::builtins::primitive_objects::PrimitiveObject;
-use crate::ecmascript::builtins::primitive_objects::PrimitiveObjectData;
-use crate::ecmascript::builtins::ArgumentsList;
-use crate::ecmascript::builtins::Behaviour;
-use crate::ecmascript::builtins::Builtin;
-use crate::ecmascript::builtins::BuiltinIntrinsicConstructor;
-use crate::ecmascript::execution::Agent;
-use crate::ecmascript::execution::JsResult;
-use crate::ecmascript::execution::ProtoIntrinsics;
-use crate::ecmascript::execution::RealmIdentifier;
-use crate::ecmascript::types::Function;
-use crate::ecmascript::types::IntoNumeric;
-use crate::ecmascript::types::IntoObject;
-use crate::ecmascript::types::IntoValue;
-use crate::ecmascript::types::Number;
-
-use crate::ecmascript::types::Numeric;
-use crate::ecmascript::types::Object;
-
-use crate::ecmascript::types::BUILTIN_STRING_MEMORY;
-use crate::ecmascript::types::{String, Value};
-use crate::heap::CreateHeapData;
-use crate::heap::IntrinsicConstructorIndexes;
-use crate::SmallInteger;
+use crate::{
+    ecmascript::{
+        abstract_operations::testing_and_comparison::is_integral_number,
+        builders::builtin_function_builder::BuiltinFunctionBuilder,
+        builtins::{
+            ordinary::ordinary_create_from_constructor,
+            primitive_objects::{PrimitiveObject, PrimitiveObjectData},
+            ArgumentsList, Behaviour, Builtin, BuiltinIntrinsicConstructor,
+        },
+        execution::{Agent, JsResult, ProtoIntrinsics, RealmIdentifier},
+        types::{
+            Function, IntoNumeric, IntoObject, IntoValue, Number, Numeric, Object, String, Value,
+            BUILTIN_STRING_MEMORY,
+        },
+    },
+    engine::context::Context,
+    heap::{CreateHeapData, IntrinsicConstructorIndexes},
+    SmallInteger,
+};
 
 /// ### [21.1.1.1 Number ( value )](https://tc39.es/ecma262/#sec-number-constructor-number-value)
 pub struct NumberConstructor;
@@ -69,7 +61,7 @@ impl Builtin for NumberIsSafeInteger {
 
 impl NumberConstructor {
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -123,7 +115,7 @@ impl NumberConstructor {
 
     /// ### [21.1.2.2 Number.isFinite ( number )](https://tc39.es/ecma262/#sec-number.isfinite)
     fn is_finite(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -141,7 +133,7 @@ impl NumberConstructor {
 
     /// ### [21.1.2.3 Number.isInteger ( number )](https://tc39.es/ecma262/#sec-number.isinteger)
     fn is_integer(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -152,7 +144,11 @@ impl NumberConstructor {
     }
 
     /// ### [21.1.2.4 Number.isNaN ( number )](https://tc39.es/ecma262/#sec-number.isnan)
-    fn is_nan(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn is_nan(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let maybe_number = arguments.get(0);
 
         // 1. If number is not a Number, return false.
@@ -167,7 +163,7 @@ impl NumberConstructor {
 
     /// ### [21.1.2.5 Number.isSafeInteger ( number )](https://tc39.es/ecma262/#sec-number.issafeinteger)
     fn is_safe_integer(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -181,7 +177,7 @@ impl NumberConstructor {
         Ok((matches!(maybe_number, Value::Integer(_)) || maybe_number.is_neg_zero(agent)).into())
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let number_prototype = intrinsics.number_prototype();
         let parse_float = intrinsics.parse_float().into_value();

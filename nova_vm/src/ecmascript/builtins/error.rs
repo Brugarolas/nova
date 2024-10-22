@@ -16,6 +16,7 @@ use crate::{
             OrdinaryObject, PropertyDescriptor, PropertyKey, Value, BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::{
         indexes::ErrorIndex, CompactionLists, CreateHeapData, Heap, HeapMarkAndSweep, ObjectEntry,
         ObjectEntryPropertyDescriptor, WorkQueues,
@@ -90,11 +91,11 @@ impl InternalSlots for Error {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 
-    fn create_backing_object(self, agent: &mut Agent) -> OrdinaryObject {
+    fn create_backing_object(self, agent: Context<'_, '_, '_>) -> OrdinaryObject {
         let prototype = self.internal_prototype(agent).unwrap();
         let message_entry = agent[self].message.map(|message| ObjectEntry {
             key: PropertyKey::from(BUILTIN_STRING_MEMORY.length),
@@ -164,7 +165,7 @@ impl InternalSlots for Error {
 impl InternalMethods for Error {
     fn internal_get_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
     ) -> JsResult<Option<crate::ecmascript::types::PropertyDescriptor>> {
         match self.get_backing_object(agent) {
@@ -190,7 +191,11 @@ impl InternalMethods for Error {
         }
     }
 
-    fn internal_has_property(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_has_property(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         match self.get_backing_object(agent) {
             Some(backing_object) => backing_object.internal_has_property(agent, property_key),
             None => Ok(
@@ -207,7 +212,7 @@ impl InternalMethods for Error {
 
     fn internal_get(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         receiver: Value,
     ) -> JsResult<Value> {
@@ -234,7 +239,7 @@ impl InternalMethods for Error {
         }
     }
 
-    fn internal_own_property_keys(self, agent: &mut Agent) -> JsResult<Vec<PropertyKey>> {
+    fn internal_own_property_keys(self, agent: Context<'_, '_, '_>) -> JsResult<Vec<PropertyKey>> {
         match self.get_backing_object(agent) {
             Some(backing_object) => backing_object.internal_own_property_keys(agent),
             None => {

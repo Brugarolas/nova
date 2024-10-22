@@ -21,6 +21,7 @@ use crate::{
             BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::{CompactionLists, CreateHeapData, HeapMarkAndSweep, WellKnownSymbolIndexes, WorkQueues},
 };
 
@@ -92,7 +93,10 @@ impl IndexMut<OrdinaryObject> for Vec<Option<ObjectHeapData>> {
 impl InternalMethods for OrdinaryObject {}
 
 /// ### [10.1.1.1 OrdinaryGetPrototypeOf ( O )](https://tc39.es/ecma262/#sec-ordinarygetprototypeof)
-pub(crate) fn ordinary_get_prototype_of(agent: &mut Agent, object: Object) -> Option<Object> {
+pub(crate) fn ordinary_get_prototype_of(
+    agent: Context<'_, '_, '_>,
+    object: Object,
+) -> Option<Object> {
     // 1. Return O.[[Prototype]].
     object.internal_prototype(agent)
 }
@@ -102,7 +106,7 @@ pub(crate) fn ordinary_get_prototype_of(agent: &mut Agent, object: Object) -> Op
 /// Returns false if a loop is detected, corresponding to substep 7.b.i. of the
 /// abstract operation.
 pub(crate) fn ordinary_set_prototype_of_check_loop(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     o: Object,
     v: Option<Object>,
 ) -> bool {
@@ -143,7 +147,7 @@ pub(crate) fn ordinary_set_prototype_of_check_loop(
 
 /// ### [10.1.2.1 OrdinarySetPrototypeOf ( O, V )](https://tc39.es/ecma262/#sec-ordinarysetprototypeof)
 pub(crate) fn ordinary_set_prototype_of(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     object: Object,
     prototype: Option<Object>,
 ) -> bool {
@@ -178,13 +182,13 @@ pub(crate) fn ordinary_set_prototype_of(
 }
 
 /// ### [10.1.3.1 OrdinaryIsExtensible ( O )](https://tc39.es/ecma262/#sec-ordinaryisextensible)
-pub(crate) fn ordinary_is_extensible(agent: &mut Agent, object: Object) -> bool {
+pub(crate) fn ordinary_is_extensible(agent: Context<'_, '_, '_>, object: Object) -> bool {
     // 1. Return O.[[Extensible]].
     object.internal_extensible(agent)
 }
 
 /// ### [10.1.4.1 OrdinaryPreventExtensions ( O )](https://tc39.es/ecma262/#sec-ordinarypreventextensions)
-pub(crate) fn ordinary_prevent_extensions(agent: &mut Agent, object: Object) -> bool {
+pub(crate) fn ordinary_prevent_extensions(agent: Context<'_, '_, '_>, object: Object) -> bool {
     // 1. Set O.[[Extensible]] to false.
     object.internal_set_extensible(agent, false);
 
@@ -194,7 +198,7 @@ pub(crate) fn ordinary_prevent_extensions(agent: &mut Agent, object: Object) -> 
 
 /// ### [10.1.5.1 OrdinaryGetOwnProperty ( O, P )](https://tc39.es/ecma262/#sec-ordinarygetownproperty)
 pub(crate) fn ordinary_get_own_property(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     object: Object,
     property_key: PropertyKey,
 ) -> Option<PropertyDescriptor> {
@@ -236,7 +240,7 @@ pub(crate) fn ordinary_get_own_property(
 
 /// ### [10.1.6.1 OrdinaryDefineOwnProperty ( O, P, Desc )](https://tc39.es/ecma262/#sec-ordinarydefineownproperty)
 pub(crate) fn ordinary_define_own_property(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     object: Object,
     property_key: PropertyKey,
     descriptor: PropertyDescriptor,
@@ -260,7 +264,7 @@ pub(crate) fn ordinary_define_own_property(
 
 /// ### [10.1.6.2 IsCompatiblePropertyDescriptor ( Extensible, Desc, Current )](https://tc39.es/ecma262/#sec-iscompatiblepropertydescriptor)
 pub(crate) fn is_compatible_property_descriptor(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     extensible: bool,
     descriptor: PropertyDescriptor,
     current: Option<PropertyDescriptor>,
@@ -278,7 +282,7 @@ pub(crate) fn is_compatible_property_descriptor(
 
 /// ### [10.1.6.3 ValidateAndApplyPropertyDescriptor ( O, P, extensible, Desc, current )](https://tc39.es/ecma262/#sec-validateandapplypropertydescriptor)
 fn validate_and_apply_property_descriptor(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     object: Option<Object>,
     property_key: PropertyKey,
     extensible: bool,
@@ -511,7 +515,7 @@ fn validate_and_apply_property_descriptor(
 
 /// ### [10.1.7.1 OrdinaryHasProperty ( O, P )](https://tc39.es/ecma262/#sec-ordinaryhasproperty)
 pub(crate) fn ordinary_has_property(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     object: Object,
     property_key: PropertyKey,
 ) -> JsResult<bool> {
@@ -538,7 +542,7 @@ pub(crate) fn ordinary_has_property(
 
 /// ### [10.1.8.1 OrdinaryGet ( O, P, Receiver )](https://tc39.es/ecma262/#sec-ordinaryget)
 pub(crate) fn ordinary_get(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     object: Object,
     property_key: PropertyKey,
     receiver: Value,
@@ -577,7 +581,7 @@ pub(crate) fn ordinary_get(
 
 /// ### [10.1.9.1 OrdinarySet ( O, P, V, Receiver )](https://tc39.es/ecma262/#sec-ordinaryset)
 pub(crate) fn ordinary_set(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     object: Object,
     property_key: PropertyKey,
     value: Value,
@@ -592,7 +596,7 @@ pub(crate) fn ordinary_set(
 
 /// ### [10.1.9.2 OrdinarySetWithOwnDescriptor ( O, P, V, Receiver, ownDesc )](https://tc39.es/ecma262/#sec-ordinarysetwithowndescriptor)
 pub(crate) fn ordinary_set_with_own_descriptor(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     object: Object,
     property_key: PropertyKey,
     value: Value,
@@ -693,7 +697,7 @@ pub(crate) fn ordinary_set_with_own_descriptor(
 
 /// ### [10.1.10.1 OrdinaryDelete ( O, P )](https://tc39.es/ecma262/#sec-ordinarydelete)
 pub(crate) fn ordinary_delete(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     object: Object,
     property_key: PropertyKey,
 ) -> JsResult<bool> {
@@ -795,7 +799,7 @@ pub(crate) fn ordinary_own_property_keys(
 /// To create an object with null prototype, both `proto_intrinsics` and
 /// `prototype` must be None.
 pub(crate) fn ordinary_object_create_with_intrinsics(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     proto_intrinsics: Option<ProtoIntrinsics>,
     prototype: Option<Object>,
 ) -> Object {
@@ -1005,7 +1009,7 @@ pub(crate) fn ordinary_object_create_with_intrinsics(
 /// kind of heap data type the created object uses, and therefore which internal
 /// slots it has. Therefore the `internalSlotsList` property isn't present.
 pub(crate) fn ordinary_create_from_constructor(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     constructor: Function,
     intrinsic_default_proto: ProtoIntrinsics,
 ) -> JsResult<Object> {
@@ -1040,7 +1044,7 @@ pub(crate) fn ordinary_create_from_constructor(
 /// would otherwise return is the prototype that corresponds to
 /// `intrinsic_default_proto`.
 pub(crate) fn get_prototype_from_constructor(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     constructor: Function,
     intrinsic_default_proto: ProtoIntrinsics,
 ) -> JsResult<Option<Object>> {
@@ -1167,7 +1171,7 @@ pub(crate) fn get_prototype_from_constructor(
 /// a Boolean or a throw completion.
 #[inline]
 pub(crate) fn set_immutable_prototype(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     o: Object,
     v: Option<Object>,
 ) -> JsResult<bool> {

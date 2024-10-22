@@ -16,6 +16,7 @@ use crate::{
             UINT_8_CLAMPED_ARRAY_DISCRIMINANT,
         },
     },
+    engine::context::Context,
     heap::{indexes::TypedArrayIndex, CreateHeapData, Heap, HeapMarkAndSweep},
 };
 
@@ -185,7 +186,7 @@ impl InternalSlots for TypedArray {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 

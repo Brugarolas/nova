@@ -203,7 +203,7 @@ impl BigInt {
     }
 
     #[inline]
-    pub fn from_i64(agent: &mut Agent, value: i64) -> Self {
+    pub fn from_i64(agent: Context<'_, '_, '_>, value: i64) -> Self {
         if let Ok(result) = SmallBigInt::try_from(value) {
             Self::SmallBigInt(result)
         } else {
@@ -212,7 +212,7 @@ impl BigInt {
     }
 
     #[inline]
-    pub(crate) fn from_num_bigint(agent: &mut Agent, value: num_bigint::BigInt) -> Self {
+    pub(crate) fn from_num_bigint(agent: Context<'_, '_, '_>, value: num_bigint::BigInt) -> Self {
         if let Ok(result) = SmallBigInt::try_from(&value) {
             Self::SmallBigInt(result)
         } else {
@@ -224,7 +224,7 @@ impl BigInt {
     ///
     /// The abstract operation BigInt::unaryMinus takes argument x (a BigInt)
     /// and returns a BigInt.
-    pub(crate) fn unary_minus(agent: &mut Agent, x: BigInt) -> BigInt {
+    pub(crate) fn unary_minus(agent: Context<'_, '_, '_>, x: BigInt) -> BigInt {
         // 1. If x is 0ℤ, return 0ℤ.
         // NOTE: This is handled with the negation below.
 
@@ -241,7 +241,7 @@ impl BigInt {
     ///
     /// The abstract operation BigInt::bitwiseNOT takes argument x (a BigInt)
     /// and returns a BigInt. It returns the one's complement of x.
-    pub(crate) fn bitwise_not(agent: &mut Agent, x: BigInt) -> BigInt {
+    pub(crate) fn bitwise_not(agent: Context<'_, '_, '_>, x: BigInt) -> BigInt {
         // 1. Return -x - 1ℤ.
         // NOTE: We can use the builtin bitwise not operations instead.
         match x {
@@ -258,7 +258,7 @@ impl BigInt {
     /// BigInt) and exponent (a BigInt) and returns either a normal completion
     /// containing a BigInt or a throw completion.
     pub(crate) fn exponentiate(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         base: BigInt,
         exponent: BigInt,
     ) -> JsResult<BigInt> {
@@ -320,7 +320,7 @@ impl BigInt {
     ///
     /// The abstract operation BigInt::multiply takes arguments x (a BigInt)
     /// and y (a BigInt) and returns a BigInt.
-    pub(crate) fn multiply(agent: &mut Agent, x: BigInt, y: BigInt) -> BigInt {
+    pub(crate) fn multiply(agent: Context<'_, '_, '_>, x: BigInt, y: BigInt) -> BigInt {
         match (x, y) {
             (BigInt::SmallBigInt(x), BigInt::SmallBigInt(y)) => {
                 let (x, y) = (x.into_i64(), y.into_i64());
@@ -355,7 +355,7 @@ impl BigInt {
     }
 
     /// ### [BigInt::add ( x, y )](https://tc39.es/ecma262/#sec-numeric-types-bigint-add)
-    pub(crate) fn add(agent: &mut Agent, x: BigInt, y: BigInt) -> BigInt {
+    pub(crate) fn add(agent: Context<'_, '_, '_>, x: BigInt, y: BigInt) -> BigInt {
         match (x, y) {
             (BigInt::SmallBigInt(x), BigInt::SmallBigInt(y)) => {
                 // Note: The result can still overflow stack bigint limits.
@@ -380,7 +380,7 @@ impl BigInt {
     }
 
     /// ### [6.1.6.2.8 BigInt::subtract ( x, y )](https://tc39.es/ecma262/#sec-numeric-types-bigint-subtract)
-    pub(crate) fn subtract(agent: &mut Agent, x: BigInt, y: BigInt) -> BigInt {
+    pub(crate) fn subtract(agent: Context<'_, '_, '_>, x: BigInt, y: BigInt) -> BigInt {
         match (x, y) {
             (BigInt::SmallBigInt(x), BigInt::SmallBigInt(y)) => {
                 // Note: The result can still overflow stack bigint limits.
@@ -406,7 +406,7 @@ impl BigInt {
     }
 
     /// ### [6.1.6.2.5 BigInt::divide ( x, y )](https://tc39.es/ecma262/#sec-numeric-types-bigint-divide)
-    pub(crate) fn divide(agent: &mut Agent, x: BigInt, y: BigInt) -> JsResult<BigInt> {
+    pub(crate) fn divide(agent: Context<'_, '_, '_>, x: BigInt, y: BigInt) -> JsResult<BigInt> {
         match (x, y) {
             (BigInt::SmallBigInt(x), BigInt::SmallBigInt(y)) => {
                 let y = y.into_i64();
@@ -463,7 +463,7 @@ impl BigInt {
     }
 
     /// ### [6.1.6.2.6 BigInt::remainder ( n, d )](https://tc39.es/ecma262/#sec-numeric-types-bigint-remainder)
-    pub(crate) fn remainder(agent: &mut Agent, n: BigInt, d: BigInt) -> JsResult<BigInt> {
+    pub(crate) fn remainder(agent: Context<'_, '_, '_>, n: BigInt, d: BigInt) -> JsResult<BigInt> {
         match (n, d) {
             (BigInt::SmallBigInt(n), BigInt::SmallBigInt(d)) => {
                 if d == SmallBigInt::zero() {
@@ -521,7 +521,7 @@ impl BigInt {
     }
 
     // ### [6.1.6.2.21 BigInt::toString ( x, radix )](https://tc39.es/ecma262/#sec-numeric-types-bigint-tostring)
-    pub(crate) fn to_string_radix_10(agent: &mut Agent, x: Self) -> JsResult<String> {
+    pub(crate) fn to_string_radix_10(agent: Context<'_, '_, '_>, x: Self) -> JsResult<String> {
         Ok(String::from_string(
             agent,
             match x {

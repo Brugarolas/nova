@@ -37,6 +37,7 @@ use crate::{
             BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
 };
 
@@ -121,7 +122,7 @@ use super::ordinary::ordinary_object_create_with_intrinsics;
 /// argumentsList (a List of ECMAScript language values) and returns an
 /// ordinary object.
 pub(crate) fn create_unmapped_arguments_object(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     arguments_list: &[Value],
 ) -> Object {
     // 1. Let len be the number of elements in argumentsList.

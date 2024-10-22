@@ -17,6 +17,7 @@ use crate::{
         execution::{Agent, JsResult, RealmIdentifier},
         types::{InternalMethods, Object, PropertyKey, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::{IntrinsicFunctionIndexes, WellKnownSymbolIndexes},
 };
 
@@ -81,7 +82,7 @@ impl Builtin for ObjectPrototypeValueOf {
 
 impl ObjectPrototype {
     fn has_own_property(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -91,7 +92,7 @@ impl ObjectPrototype {
     }
 
     fn is_prototype_of(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -114,7 +115,7 @@ impl ObjectPrototype {
     }
 
     fn property_is_enumerable(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -129,7 +130,7 @@ impl ObjectPrototype {
     }
 
     fn to_locale_string(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -139,7 +140,7 @@ impl ObjectPrototype {
     }
 
     fn to_string(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -228,14 +229,14 @@ impl ObjectPrototype {
     }
 
     fn value_of(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
         to_object(agent, this_value).map(|result| result.into_value())
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         // The Object prototype object:
         let intrinsics = agent.get_realm(realm).intrinsics();
         // is %Object.prototype%.

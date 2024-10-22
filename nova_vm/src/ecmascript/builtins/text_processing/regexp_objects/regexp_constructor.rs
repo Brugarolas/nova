@@ -2,24 +2,16 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::ecmascript::builders::builtin_function_builder::BuiltinFunctionBuilder;
-use crate::ecmascript::builtins::ArgumentsList;
-use crate::ecmascript::builtins::Behaviour;
-use crate::ecmascript::builtins::Builtin;
-use crate::ecmascript::builtins::BuiltinGetter;
-use crate::ecmascript::builtins::BuiltinIntrinsicConstructor;
-use crate::ecmascript::execution::Agent;
-use crate::ecmascript::execution::JsResult;
-use crate::ecmascript::execution::RealmIdentifier;
-
-use crate::ecmascript::types::IntoObject;
-use crate::ecmascript::types::Object;
-use crate::ecmascript::types::PropertyKey;
-use crate::ecmascript::types::String;
-use crate::ecmascript::types::Value;
-use crate::ecmascript::types::BUILTIN_STRING_MEMORY;
-use crate::heap::IntrinsicConstructorIndexes;
-use crate::heap::WellKnownSymbolIndexes;
+use crate::{
+    ecmascript::{
+        builders::builtin_function_builder::BuiltinFunctionBuilder,
+        builtins::{ArgumentsList, Behaviour, Builtin, BuiltinGetter, BuiltinIntrinsicConstructor},
+        execution::{Agent, JsResult, RealmIdentifier},
+        types::{IntoObject, Object, PropertyKey, String, Value, BUILTIN_STRING_MEMORY},
+    },
+    engine::context::Context,
+    heap::{IntrinsicConstructorIndexes, WellKnownSymbolIndexes},
+};
 
 pub struct RegExpConstructor;
 
@@ -43,7 +35,7 @@ impl BuiltinGetter for RegExpGetSpecies {}
 
 impl RegExpConstructor {
     fn behaviour(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -55,7 +47,7 @@ impl RegExpConstructor {
         Ok(this_value)
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let regexp_prototype = intrinsics.reg_exp_prototype();
 

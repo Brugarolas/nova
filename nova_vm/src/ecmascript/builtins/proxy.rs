@@ -12,6 +12,7 @@ use crate::{
             PropertyDescriptor, PropertyKey, Value,
         },
     },
+    engine::context::Context,
     heap::{
         indexes::{BaseIndex, ProxyIndex},
         CreateHeapData, Heap, HeapMarkAndSweep,
@@ -78,11 +79,11 @@ impl InternalSlots for Proxy {
         todo!()
     }
 
-    fn set_backing_object(self, _agent: &mut Agent, _backing_object: OrdinaryObject) {
+    fn set_backing_object(self, _agent: Context<'_, '_, '_>, _backing_object: OrdinaryObject) {
         todo!()
     }
 
-    fn create_backing_object(self, _agent: &mut Agent) -> OrdinaryObject {
+    fn create_backing_object(self, _agent: Context<'_, '_, '_>) -> OrdinaryObject {
         todo!()
     }
 
@@ -90,7 +91,7 @@ impl InternalSlots for Proxy {
         todo!();
     }
 
-    fn internal_set_extensible(self, _agent: &mut Agent, _value: bool) {
+    fn internal_set_extensible(self, _agent: Context<'_, '_, '_>, _value: bool) {
         todo!();
     }
 
@@ -98,36 +99,36 @@ impl InternalSlots for Proxy {
         todo!();
     }
 
-    fn internal_set_prototype(self, _agent: &mut Agent, _prototype: Option<Object>) {
+    fn internal_set_prototype(self, _agent: Context<'_, '_, '_>, _prototype: Option<Object>) {
         todo!();
     }
 }
 
 impl InternalMethods for Proxy {
-    fn internal_get_prototype_of(self, agent: &mut Agent) -> JsResult<Option<Object>> {
+    fn internal_get_prototype_of(self, agent: Context<'_, '_, '_>) -> JsResult<Option<Object>> {
         Ok(self.internal_prototype(agent))
     }
 
     fn internal_set_prototype_of(
         self,
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _prototype: Option<Object>,
     ) -> JsResult<bool> {
         todo!();
     }
 
-    fn internal_is_extensible(self, agent: &mut Agent) -> JsResult<bool> {
+    fn internal_is_extensible(self, agent: Context<'_, '_, '_>) -> JsResult<bool> {
         Ok(self.internal_extensible(agent))
     }
 
-    fn internal_prevent_extensions(self, agent: &mut Agent) -> JsResult<bool> {
+    fn internal_prevent_extensions(self, agent: Context<'_, '_, '_>) -> JsResult<bool> {
         self.internal_set_extensible(agent, false);
         Ok(true)
     }
 
     fn internal_get_own_property(
         self,
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _property_key: PropertyKey,
     ) -> JsResult<Option<PropertyDescriptor>> {
         todo!();
@@ -135,7 +136,7 @@ impl InternalMethods for Proxy {
 
     fn internal_define_own_property(
         self,
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _property_key: PropertyKey,
         _property_descriptor: PropertyDescriptor,
     ) -> JsResult<bool> {
@@ -144,7 +145,7 @@ impl InternalMethods for Proxy {
 
     fn internal_has_property(
         self,
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _property_key: PropertyKey,
     ) -> JsResult<bool> {
         todo!();
@@ -152,7 +153,7 @@ impl InternalMethods for Proxy {
 
     fn internal_get(
         self,
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _property_key: PropertyKey,
         _receiver: Value,
     ) -> JsResult<Value> {
@@ -161,7 +162,7 @@ impl InternalMethods for Proxy {
 
     fn internal_set(
         self,
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _property_key: PropertyKey,
         _value: Value,
         _receiver: Value,
@@ -169,17 +170,21 @@ impl InternalMethods for Proxy {
         todo!();
     }
 
-    fn internal_delete(self, _agent: &mut Agent, _property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_delete(
+        self,
+        _agent: Context<'_, '_, '_>,
+        _property_key: PropertyKey,
+    ) -> JsResult<bool> {
         todo!();
     }
 
-    fn internal_own_property_keys(self, _agent: &mut Agent) -> JsResult<Vec<PropertyKey>> {
+    fn internal_own_property_keys(self, _agent: Context<'_, '_, '_>) -> JsResult<Vec<PropertyKey>> {
         todo!();
     }
 
     fn internal_call(
         self,
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments_list: super::ArgumentsList,
     ) -> JsResult<Value> {
@@ -188,7 +193,7 @@ impl InternalMethods for Proxy {
 
     fn internal_construct(
         self,
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _arguments_list: super::ArgumentsList,
         _new_target: crate::ecmascript::types::Function,
     ) -> JsResult<Object> {

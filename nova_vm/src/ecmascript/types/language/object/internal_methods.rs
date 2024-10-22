@@ -14,6 +14,7 @@ use crate::ecmascript::{
         },
         ArgumentsList,
     },
+    engine::context::Context,
     execution::{Agent, JsResult},
     types::{Function, PropertyDescriptor, Value},
 };
@@ -24,7 +25,7 @@ where
     Self: Sized + Clone + Copy + Into<Object> + InternalSlots,
 {
     /// \[\[GetPrototypeOf\]\]
-    fn internal_get_prototype_of(self, agent: &mut Agent) -> JsResult<Option<Object>> {
+    fn internal_get_prototype_of(self, agent: Context<'_, '_, '_>) -> JsResult<Option<Object>> {
         match self.get_backing_object(agent) {
             Some(backing_object) => Ok(ordinary_get_prototype_of(
                 agent,
@@ -37,7 +38,7 @@ where
     /// \[\[SetPrototypeOf\]\]
     fn internal_set_prototype_of(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         prototype: Option<Object>,
     ) -> JsResult<bool> {
         match self.get_backing_object(agent) {
@@ -82,7 +83,7 @@ where
     }
 
     /// \[\[IsExtensible\]\]
-    fn internal_is_extensible(self, agent: &mut Agent) -> JsResult<bool> {
+    fn internal_is_extensible(self, agent: Context<'_, '_, '_>) -> JsResult<bool> {
         // 1. Return OrdinaryIsExtensible(O).
         match self.get_backing_object(agent) {
             Some(backing_object) => Ok(ordinary_is_extensible(agent, backing_object.into_object())),
@@ -91,7 +92,7 @@ where
     }
 
     /// \[\[PreventExtensions\]\]
-    fn internal_prevent_extensions(self, agent: &mut Agent) -> JsResult<bool> {
+    fn internal_prevent_extensions(self, agent: Context<'_, '_, '_>) -> JsResult<bool> {
         // 1. Return OrdinaryPreventExtensions(O).
         match self.get_backing_object(agent) {
             Some(backing_object) => Ok(ordinary_prevent_extensions(
@@ -108,7 +109,7 @@ where
     /// \[\[GetOwnProperty\]\]
     fn internal_get_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
     ) -> JsResult<Option<PropertyDescriptor>> {
         // 1. Return OrdinaryGetOwnProperty(O, P).
@@ -125,7 +126,7 @@ where
     /// \[\[DefineOwnProperty\]\]
     fn internal_define_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         property_descriptor: PropertyDescriptor,
     ) -> JsResult<bool> {
@@ -137,7 +138,11 @@ where
     }
 
     /// \[\[HasProperty\]\]
-    fn internal_has_property(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_has_property(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         // 1. Return ? OrdinaryHasProperty(O, P).
         match self.get_backing_object(agent) {
             Some(backing_object) => {
@@ -162,7 +167,7 @@ where
     /// \[\[Get\]\]
     fn internal_get(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         receiver: Value,
     ) -> JsResult<Value> {
@@ -187,7 +192,7 @@ where
     /// \[\[Set\]\]
     fn internal_set(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         value: Value,
         receiver: Value,
@@ -201,7 +206,11 @@ where
     }
 
     /// \[\[Delete\]\]
-    fn internal_delete(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_delete(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         // 1. Return ? OrdinaryDelete(O, P).
         match self.get_backing_object(agent) {
             Some(backing_object) => {
@@ -212,7 +221,7 @@ where
     }
 
     /// \[\[OwnPropertyKeys\]\]
-    fn internal_own_property_keys(self, agent: &mut Agent) -> JsResult<Vec<PropertyKey>> {
+    fn internal_own_property_keys(self, agent: Context<'_, '_, '_>) -> JsResult<Vec<PropertyKey>> {
         // 1. Return OrdinaryOwnPropertyKeys(O).
         match self.get_backing_object(agent) {
             Some(backing_object) => Ok(ordinary_own_property_keys(agent, backing_object)),
@@ -223,7 +232,7 @@ where
     /// \[\[Call\]\]
     fn internal_call(
         self,
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments_list: ArgumentsList,
     ) -> JsResult<Value> {
@@ -233,7 +242,7 @@ where
     /// \[\[Construct\]\]
     fn internal_construct(
         self,
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _arguments_list: ArgumentsList,
         _new_target: Function,
     ) -> JsResult<Object> {

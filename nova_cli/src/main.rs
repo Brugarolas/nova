@@ -9,13 +9,13 @@ use std::{cell::RefCell, collections::VecDeque, fmt::Debug};
 use clap::{Parser as ClapParser, Subcommand};
 use cliclack::{input, intro, set_theme};
 use helper::{exit_with_parse_errors, initialize_global_object};
-use nova_vm::ecmascript::{
-    execution::{
-        agent::{GcAgent, HostHooks, Job, Options},
-        Agent,
+use nova_vm::{
+    ecmascript::{
+        execution::agent::{GcAgent, HostHooks, Job, Options},
+        scripts_and_modules::script::{parse_script, script_evaluation},
+        types::{Object, String as JsString},
     },
-    scripts_and_modules::script::{parse_script, script_evaluation},
-    types::{Object, String as JsString},
+    engine::context::Context,
 };
 use oxc_parser::Parser;
 use oxc_semantic::{SemanticBuilder, SemanticBuilderReturn};
@@ -189,8 +189,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 },
                 host_hooks,
             );
-            let create_global_object: Option<fn(&mut Agent) -> Object> = None;
-            let create_global_this_value: Option<fn(&mut Agent) -> Object> = None;
+            let create_global_object: Option<fn(Context<'_, '_, '_>) -> Object> = None;
+            let create_global_this_value: Option<fn(Context<'_, '_, '_>) -> Object> = None;
             let realm = agent.create_realm(
                 create_global_object,
                 create_global_this_value,

@@ -9,6 +9,7 @@ use crate::{
         execution::{Agent, JsResult, RealmIdentifier},
         types::{IntoValue, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::WellKnownSymbolIndexes,
 };
 
@@ -40,23 +41,31 @@ impl Builtin for AsyncGeneratorPrototypeThrow {
 }
 
 impl AsyncGeneratorPrototype {
-    fn next(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
-        todo!()
-    }
-
-    fn r#return(
-        _agent: &mut Agent,
+    fn next(
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
         todo!()
     }
 
-    fn throw(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn r#return(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!()
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    fn throw(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
+        todo!()
+    }
+
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let async_iterator_prototype = intrinsics.async_iterator_prototype();
         let async_generator_function_prototype = intrinsics.async_generator_function_prototype();

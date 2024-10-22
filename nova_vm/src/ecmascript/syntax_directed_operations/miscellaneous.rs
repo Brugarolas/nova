@@ -6,10 +6,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::ecmascript::{
-    builtins::ECMAScriptFunction,
-    execution::{Agent, EnvironmentIndex, PrivateEnvironmentIndex},
-    syntax_directed_operations::function_definitions::instantiate_ordinary_function_object,
+use crate::{
+    ecmascript::{
+        builtins::ECMAScriptFunction,
+        execution::{Agent, EnvironmentIndex, PrivateEnvironmentIndex},
+        syntax_directed_operations::function_definitions::instantiate_ordinary_function_object,
+    },
+    engine::context::Context,
 };
 use oxc_ast::ast;
 
@@ -19,7 +22,7 @@ use oxc_ast::ast;
 /// (an Environment Record) and privateEnv (a PrivateEnvironment Record or
 /// null) and returns an ECMAScript function object.
 pub(crate) fn instantiate_function_object(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     function: &ast::Function<'_>,
     env: EnvironmentIndex,
     private_env: Option<PrivateEnvironmentIndex>,

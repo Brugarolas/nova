@@ -11,6 +11,7 @@ use crate::{
         execution::{Agent, JsResult, ProtoIntrinsics},
         types::{Function, String, Value},
     },
+    engine::context::Context,
     heap::CreateHeapData,
 };
 
@@ -22,7 +23,7 @@ use super::{RegExp, RegExpHeapData};
 /// language value) and F (a String or undefined) and returns either a normal
 /// completion containing an Object or a throw completion.
 pub(crate) fn reg_exp_create(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     p: Value,
     f: Option<RegExpFlags>,
 ) -> JsResult<RegExp> {
@@ -32,7 +33,7 @@ pub(crate) fn reg_exp_create(
     reg_exp_initialize(agent, obj, p, f)
 }
 
-fn reg_exp_alloc_intrinsic(agent: &mut Agent) -> RegExp {
+fn reg_exp_alloc_intrinsic(agent: Context<'_, '_, '_>) -> RegExp {
     // 1. Let obj be ? OrdinaryCreateFromConstructor(newTarget, "%RegExp.prototype%", « [[OriginalSource]], [[OriginalFlags]], [[RegExpRecord]], [[RegExpMatcher]] »).
 
     // 2. Perform ! DefinePropertyOrThrow(obj, "lastIndex", PropertyDescriptor { [[Writable]]: true, [[Enumerable]]: false, [[Configurable]]: false }).
@@ -46,7 +47,7 @@ fn reg_exp_alloc_intrinsic(agent: &mut Agent) -> RegExp {
 /// The abstract operation RegExpAlloc takes argument newTarget (a constructor)
 /// and returns either a normal completion containing an Object or a throw
 /// completion.
-pub(crate) fn reg_exp_alloc(agent: &mut Agent, new_target: Function) -> JsResult<RegExp> {
+pub(crate) fn reg_exp_alloc(agent: Context<'_, '_, '_>, new_target: Function) -> JsResult<RegExp> {
     // 1. Let obj be ? OrdinaryCreateFromConstructor(newTarget, "%RegExp.prototype%", « [[OriginalSource]], [[OriginalFlags]], [[RegExpRecord]], [[RegExpMatcher]] »).
     let obj = RegExp::try_from(ordinary_create_from_constructor(
         agent,
@@ -67,7 +68,7 @@ pub(crate) fn reg_exp_alloc(agent: &mut Agent, new_target: Function) -> JsResult
 /// value) and returns either a normal completion containing an Object or a
 /// throw completion.
 pub(crate) fn reg_exp_initialize(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     obj: RegExp,
     pattern: Value,
     flags: Option<RegExpFlags>,

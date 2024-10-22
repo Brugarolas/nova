@@ -41,6 +41,7 @@ use crate::{
             BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::{
         indexes::ECMAScriptFunctionIndex, CompactionLists, CreateHeapData, Heap, HeapMarkAndSweep,
         WorkQueues,
@@ -303,11 +304,11 @@ impl InternalSlots for ECMAScriptFunction {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 
-    fn create_backing_object(self, agent: &mut Agent) -> OrdinaryObject {
+    fn create_backing_object(self, agent: Context<'_, '_, '_>) -> OrdinaryObject {
         function_create_backing_object(self, agent)
     }
 
@@ -346,7 +347,7 @@ impl FunctionInternalProperties for ECMAScriptFunction {
 impl InternalMethods for ECMAScriptFunction {
     fn internal_get_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
     ) -> JsResult<Option<PropertyDescriptor>> {
         function_internal_get_own_property(self, agent, property_key)
@@ -354,20 +355,24 @@ impl InternalMethods for ECMAScriptFunction {
 
     fn internal_define_own_property(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         property_descriptor: PropertyDescriptor,
     ) -> JsResult<bool> {
         function_internal_define_own_property(self, agent, property_key, property_descriptor)
     }
 
-    fn internal_has_property(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_has_property(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         function_internal_has_property(self, agent, property_key)
     }
 
     fn internal_get(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         receiver: Value,
     ) -> JsResult<Value> {
@@ -376,7 +381,7 @@ impl InternalMethods for ECMAScriptFunction {
 
     fn internal_set(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         property_key: PropertyKey,
         value: Value,
         receiver: Value,
@@ -384,11 +389,15 @@ impl InternalMethods for ECMAScriptFunction {
         function_internal_set(self, agent, property_key, value, receiver)
     }
 
-    fn internal_delete(self, agent: &mut Agent, property_key: PropertyKey) -> JsResult<bool> {
+    fn internal_delete(
+        self,
+        agent: Context<'_, '_, '_>,
+        property_key: PropertyKey,
+    ) -> JsResult<bool> {
         function_internal_delete(self, agent, property_key)
     }
 
-    fn internal_own_property_keys(self, agent: &mut Agent) -> JsResult<Vec<PropertyKey>> {
+    fn internal_own_property_keys(self, agent: Context<'_, '_, '_>) -> JsResult<Vec<PropertyKey>> {
         function_internal_own_property_keys(self, agent)
     }
 
@@ -401,7 +410,7 @@ impl InternalMethods for ECMAScriptFunction {
     /// throw completion.
     fn internal_call(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         this_argument: Value,
         arguments_list: ArgumentsList<'_>,
     ) -> JsResult<Value> {
@@ -453,7 +462,7 @@ impl InternalMethods for ECMAScriptFunction {
 
     fn internal_construct(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         arguments_list: ArgumentsList,
         new_target: Function,
     ) -> JsResult<Object> {
@@ -551,7 +560,7 @@ impl InternalMethods for ECMAScriptFunction {
 /// ECMAScript function object) and newTarget (an Object or undefined) and
 /// returns an execution context.
 pub(crate) fn prepare_for_ordinary_call(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     f: ECMAScriptFunction,
     new_target: Option<Object>,
 ) -> &ExecutionContext {
@@ -602,7 +611,7 @@ pub(crate) fn prepare_for_ordinary_call(
 /// Note: calleeContext is replaced by localEnv which is the only thing it is
 /// truly used for.
 pub(crate) fn ordinary_call_bind_this(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     f: ECMAScriptFunction,
     local_env: FunctionEnvironmentIndex,
     this_argument: Value,
@@ -656,7 +665,7 @@ pub(crate) fn ordinary_call_bind_this(
 /// language values) and returns either a normal completion containing an
 /// ECMAScript language value or an abrupt completion.
 pub(crate) fn evaluate_body(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     function_object: ECMAScriptFunction,
     arguments_list: ArgumentsList,
 ) -> JsResult<Value> {
@@ -722,7 +731,7 @@ pub(crate) fn evaluate_body(
 /// language values) and returns either a normal completion containing an
 /// ECMAScript language value or an abrupt completion.
 pub(crate) fn ordinary_call_evaluate_body(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     f: ECMAScriptFunction,
     arguments_list: ArgumentsList,
 ) -> JsResult<Value> {
@@ -854,7 +863,7 @@ pub(crate) fn ordinary_function_create<'agent, 'program>(
 /// writablePrototype (a Boolean) and prototype (an Object) and returns
 /// UNUSED. It converts F into a constructor.
 pub(crate) fn make_constructor(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     function: impl IntoFunction,
     writable_prototype: Option<bool>,
     prototype: Option<Object>,
@@ -929,7 +938,7 @@ pub(crate) fn make_constructor(
 /// object) and homeObject (an Object) and returns unused. It configures F as a
 /// method.
 #[inline]
-pub(crate) fn make_method(agent: &mut Agent, f: ECMAScriptFunction, home_object: Object) {
+pub(crate) fn make_method(agent: Context<'_, '_, '_>, f: ECMAScriptFunction, home_object: Object) {
     // 1. Set F.[[HomeObject]] to homeObject.
     agent[f].ecmascript_function.home_object = Some(home_object);
     // 2. Return unused.
@@ -940,7 +949,7 @@ pub(crate) fn make_method(agent: &mut Agent, f: ECMAScriptFunction, home_object:
 /// object) and name (a property key or Private Name) and optional argument
 /// prefix (a String) and returns UNUSED. It adds a "name" property to F.
 pub(crate) fn set_function_name(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     function: impl IntoFunction,
     name: PropertyKey,
     _prefix: Option<String>,
@@ -1000,7 +1009,7 @@ pub(crate) fn set_function_name(
 
 /// ### [10.2.10 SetFunctionLength ( F, length )](https://tc39.es/ecma262/#sec-setfunctionlength)
 fn set_ecmascript_function_length(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     function: &mut ECMAScriptFunctionHeapData,
     length: usize,
 ) -> JsResult<()> {

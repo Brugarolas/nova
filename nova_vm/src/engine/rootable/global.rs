@@ -73,7 +73,7 @@ impl<T: Rootable> Global<T> {
 
     /// Access the rooted value from inside this Global without releasing the
     /// Global.
-    pub fn get(&self, agent: &mut Agent) -> T {
+    pub fn get(&self, agent: Context<'_, '_, '_>) -> T {
         let heap_ref = match T::from_root_repr(&self.0) {
             Ok(value) => {
                 // The value didn't need rooting
@@ -99,7 +99,7 @@ impl<T: Rootable> Global<T> {
     /// original Global and the cloned one must be explicitly released before
     /// the rooted value can be garbage collected.
     #[must_use]
-    pub fn clone(&self, agent: &mut Agent) -> Self {
+    pub fn clone(&self, agent: Context<'_, '_, '_>) -> Self {
         let value = self.get(agent);
         Self::new(agent, value)
     }

@@ -10,6 +10,7 @@ use crate::{
         execution::{agent::ExceptionType, Agent, JsResult, RealmIdentifier},
         types::{IntoValue, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::{IntrinsicFunctionIndexes, WellKnownSymbolIndexes},
 };
 
@@ -47,7 +48,11 @@ impl Builtin for GeneratorPrototypeThrow {
 }
 
 impl GeneratorPrototype {
-    fn next(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn next(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // GeneratorResume: 1. Let state be ? GeneratorValidate(generator, generatorBrand).
         let Value::Generator(generator) = this_value else {
             return Err(agent.throw_exception_with_static_message(
@@ -60,7 +65,11 @@ impl GeneratorPrototype {
         Ok(generator.resume(agent, arguments.get(0))?.into_value())
     }
 
-    fn r#return(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn r#return(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // 1. Let g be the this value.
         // 2. Let C be Completion Record { [[Type]]: return, [[Value]]: value, [[Target]]: empty }.
         // 3. Return ? GeneratorResumeAbrupt(g, C, empty).
@@ -108,7 +117,11 @@ impl GeneratorPrototype {
         Ok(create_iter_result_object(agent, arguments.get(0), true).into_value())
     }
 
-    fn throw(agent: &mut Agent, this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn throw(
+        agent: Context<'_, '_, '_>,
+        this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         // GeneratorResumeAbrupt: 1. Let state be ? GeneratorValidate(generator, generatorBrand).
         let Value::Generator(generator) = this_value else {
             return Err(agent.throw_exception_with_static_message(
@@ -125,7 +138,7 @@ impl GeneratorPrototype {
             .into_value())
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let iterator_prototype = intrinsics.iterator_prototype();
         let generator_function_prototype = intrinsics.generator_function_prototype();

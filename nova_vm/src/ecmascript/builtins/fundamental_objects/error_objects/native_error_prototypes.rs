@@ -2,15 +2,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::ecmascript::{
-    builders::ordinary_object_builder::OrdinaryObjectBuilder,
-    execution::{Agent, RealmIdentifier},
-    types::{String, BUILTIN_STRING_MEMORY},
+use crate::{
+    ecmascript::{
+        builders::ordinary_object_builder::OrdinaryObjectBuilder,
+        execution::{Agent, RealmIdentifier},
+        types::{String, BUILTIN_STRING_MEMORY},
+    },
+    engine::context::Context,
 };
 
 pub(crate) struct NativeErrorPrototypes;
 impl NativeErrorPrototypes {
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let error_prototype = intrinsics.error_prototype();
         let eval_constructor = intrinsics.eval_error();

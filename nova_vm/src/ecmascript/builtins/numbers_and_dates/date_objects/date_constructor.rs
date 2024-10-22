@@ -4,27 +4,23 @@
 
 use std::time::SystemTime;
 
-use crate::ecmascript::abstract_operations::type_conversion::to_number;
-use crate::ecmascript::builders::builtin_function_builder::BuiltinFunctionBuilder;
-use crate::ecmascript::builtins::date::Date;
-use crate::ecmascript::builtins::ordinary::ordinary_create_from_constructor;
-use crate::ecmascript::builtins::ArgumentsList;
-use crate::ecmascript::builtins::Behaviour;
-use crate::ecmascript::builtins::Builtin;
-use crate::ecmascript::builtins::BuiltinIntrinsicConstructor;
-use crate::ecmascript::execution::Agent;
-use crate::ecmascript::execution::JsResult;
-use crate::ecmascript::execution::ProtoIntrinsics;
-use crate::ecmascript::execution::RealmIdentifier;
-use crate::ecmascript::types::Function;
-use crate::ecmascript::types::IntoObject;
-use crate::ecmascript::types::IntoValue;
-use crate::ecmascript::types::Number;
-use crate::ecmascript::types::Object;
-use crate::ecmascript::types::BUILTIN_STRING_MEMORY;
-use crate::ecmascript::types::{String, Value};
-use crate::heap::IntrinsicConstructorIndexes;
-use crate::SmallInteger;
+use crate::{
+    ecmascript::{
+        abstract_operations::type_conversion::to_number,
+        builders::builtin_function_builder::BuiltinFunctionBuilder,
+        builtins::{
+            date::Date, ordinary::ordinary_create_from_constructor, ArgumentsList, Behaviour,
+            Builtin, BuiltinIntrinsicConstructor,
+        },
+        execution::{Agent, JsResult, ProtoIntrinsics, RealmIdentifier},
+        types::{
+            Function, IntoObject, IntoValue, Number, Object, String, Value, BUILTIN_STRING_MEMORY,
+        },
+    },
+    engine::context::Context,
+    heap::IntrinsicConstructorIndexes,
+    SmallInteger,
+};
 
 pub struct DateConstructor;
 
@@ -57,7 +53,7 @@ impl Builtin for DateUTC {
 }
 impl DateConstructor {
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -122,7 +118,11 @@ impl DateConstructor {
     }
 
     /// ### [21.1.2.2 Number.isFinite ( number )](https://tc39.es/ecma262/#sec-number.isfinite)
-    fn now(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn now(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let time_value = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap()
@@ -136,12 +136,20 @@ impl DateConstructor {
     }
 
     /// ### [21.1.2.3 Number.isInteger ( number )](https://tc39.es/ecma262/#sec-number.isinteger)
-    fn parse(_agent: &mut Agent, _this_value: Value, _arguments: ArgumentsList) -> JsResult<Value> {
+    fn parse(
+        _agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        _arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         todo!();
     }
 
     /// ### [21.4.3.4 Date.UTC ( year \[ , month \[ , date \[ , hours \[ , minutes \[ , seconds \[ , ms \] \] \] \] \] \] )](https://tc39.es/ecma262/#sec-date.utc)
-    fn utc(agent: &mut Agent, _this_value: Value, arguments: ArgumentsList) -> JsResult<Value> {
+    fn utc(
+        agent: Context<'_, '_, '_>,
+        _this_value: Value,
+        arguments: ArgumentsList,
+    ) -> JsResult<Value> {
         let _ns = arguments.get(0);
         // 1. Let y be ? ToNumber(year).
         let _y = to_number(agent, arguments.get(0))?;
@@ -191,7 +199,7 @@ impl DateConstructor {
         // and it interprets the arguments in UTC rather than as local time.
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let date_prototype = intrinsics.date_prototype();
 

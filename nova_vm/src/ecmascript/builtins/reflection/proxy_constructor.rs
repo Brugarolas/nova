@@ -9,6 +9,7 @@ use crate::{
         execution::{Agent, JsResult, RealmIdentifier},
         types::{Object, String, Value, BUILTIN_STRING_MEMORY},
     },
+    engine::context::Context,
     heap::IntrinsicConstructorIndexes,
 };
 
@@ -35,7 +36,7 @@ impl Builtin for ProxyRevocable {
 
 impl ProxyConstructor {
     fn behaviour(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
         _new_target: Option<Object>,
@@ -44,14 +45,14 @@ impl ProxyConstructor {
     }
 
     fn revocable(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
         todo!()
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         BuiltinFunctionBuilder::new_intrinsic_constructor::<ProxyConstructor>(agent, realm)
             .with_property_capacity(1)
             .with_builtin_function_property::<ProxyRevocable>()

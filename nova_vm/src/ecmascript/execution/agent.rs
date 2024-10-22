@@ -18,7 +18,8 @@ use crate::{
         builtins::{control_abstraction_objects::promise_objects::promise_abstract_operations::promise_jobs::{PromiseReactionJob, PromiseResolveThenableJob}, error::ErrorHeapData, promise::Promise},
         scripts_and_modules::ScriptOrModule,
         types::{Function, IntoValue, Object, Reference, String, Symbol, Value},
-    }, engine::{context::{Context, GcToken, ScopeToken}, rootable::HeapRootData, Vm}, heap::{heap_gc::heap_gc, CreateHeapData, PrimitiveHeapIndexable}, Heap
+    },
+    engine::{context::{Context, GcToken, ScopeToken}, rootable::HeapRootData, Vm}, heap::{heap_gc::heap_gc, CreateHeapData, PrimitiveHeapIndexable}, Heap
 };
 use std::{any::Any, cell::RefCell, ptr::NonNull};
 
@@ -42,7 +43,7 @@ impl JsError {
         self.0
     }
 
-    pub fn to_string(self, agent: &mut Agent) -> String {
+    pub fn to_string(self, agent: Context<'_, '_, '_>) -> String {
         to_string(agent, self.0).unwrap()
     }
 }
@@ -65,7 +66,7 @@ impl Job {
         self.realm
     }
 
-    pub fn run(&self, agent: &mut Agent) -> JsResult<()> {
+    pub fn run(&self, agent: Context<'_, '_, '_>) -> JsResult<()> {
         let mut pushed_context = false;
         if let Some(realm) = self.realm {
             if agent.current_realm_id() != realm {
@@ -431,7 +432,7 @@ impl Agent {
 /// The abstract operation GetActiveScriptOrModule takes no arguments and
 /// returns a Script Record, a Module Record, or null. It is used to determine
 /// the running script or module, based on the running execution context.
-pub(crate) fn get_active_script_or_module(agent: &mut Agent) -> Option<ScriptOrModule> {
+pub(crate) fn get_active_script_or_module(agent: Context<'_, '_, '_>) -> Option<ScriptOrModule> {
     if agent.execution_context_stack.is_empty() {
         return None;
     }
@@ -452,7 +453,7 @@ pub(crate) fn get_active_script_or_module(agent: &mut Agent) -> Option<ScriptOrM
 /// explicitly provide the Environment Record that is to be searched for the
 /// binding.
 pub(crate) fn resolve_binding(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     name: String,
     env: Option<EnvironmentIndex>,
 ) -> JsResult<Reference> {

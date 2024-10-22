@@ -31,6 +31,7 @@ use crate::{
             BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::{Heap, IntrinsicConstructorIndexes, PrimitiveHeap, WellKnownSymbolIndexes},
 };
 
@@ -62,7 +63,7 @@ impl BuiltinGetter for MapGetSpecies {}
 
 impl MapConstructor {
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -116,7 +117,7 @@ impl MapConstructor {
     }
 
     fn group_by(
-        _agent: &mut Agent,
+        _agent: Context<'_, '_, '_>,
         _this_value: Value,
         _arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -127,7 +128,7 @@ impl MapConstructor {
         Ok(this_value)
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let map_prototype = intrinsics.map_prototype();
 
@@ -146,7 +147,7 @@ impl MapConstructor {
 ///
 /// This is a specialization for the `new Map()` use case.
 pub fn add_entries_from_iterable_map_constructor(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     target: Map,
     iterable: Value,
     adder: Function,
@@ -270,7 +271,7 @@ pub fn add_entries_from_iterable_map_constructor(
 /// > as a Map key and whose second element is the value to associate with that
 /// > key.
 pub(crate) fn add_entries_from_iterable(
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     target: Object,
     iterable: Value,
     adder: Function,

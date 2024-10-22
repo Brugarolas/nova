@@ -11,6 +11,7 @@ use crate::{
             PropertyDescriptor, PropertyKey, String, Value, BUILTIN_STRING_MEMORY,
         },
     },
+    engine::context::Context,
     heap::{CreateHeapData, ObjectEntry, ObjectEntryPropertyDescriptor},
 };
 
@@ -36,7 +37,7 @@ where
 
 pub(crate) fn function_create_backing_object(
     func: impl FunctionInternalProperties,
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
 ) -> OrdinaryObject {
     assert!(func.get_backing_object(agent).is_none());
     let prototype = func.internal_prototype(agent);
@@ -74,7 +75,7 @@ pub(crate) fn function_create_backing_object(
 
 pub(crate) fn function_internal_get_own_property(
     func: impl FunctionInternalProperties,
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     property_key: PropertyKey,
 ) -> JsResult<Option<PropertyDescriptor>> {
     if let Some(backing_object) = func.get_backing_object(agent) {
@@ -102,7 +103,7 @@ pub(crate) fn function_internal_get_own_property(
 
 pub(crate) fn function_internal_define_own_property(
     func: impl FunctionInternalProperties,
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     property_key: PropertyKey,
     property_descriptor: PropertyDescriptor,
 ) -> JsResult<bool> {
@@ -114,7 +115,7 @@ pub(crate) fn function_internal_define_own_property(
 
 pub(crate) fn function_internal_has_property(
     func: impl FunctionInternalProperties,
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     property_key: PropertyKey,
 ) -> JsResult<bool> {
     if let Some(backing_object) = func.get_backing_object(agent) {
@@ -133,7 +134,7 @@ pub(crate) fn function_internal_has_property(
 
 pub(crate) fn function_internal_get(
     func: impl FunctionInternalProperties,
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     property_key: PropertyKey,
     receiver: Value,
 ) -> JsResult<Value> {
@@ -153,7 +154,7 @@ pub(crate) fn function_internal_get(
 
 pub(crate) fn function_internal_set(
     func: impl FunctionInternalProperties,
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     property_key: PropertyKey,
     value: Value,
     receiver: Value,
@@ -173,7 +174,7 @@ pub(crate) fn function_internal_set(
 
 pub(crate) fn function_internal_delete(
     func: impl FunctionInternalProperties,
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
     property_key: PropertyKey,
 ) -> JsResult<bool> {
     if let Some(backing_object) = func.get_backing_object(agent) {
@@ -191,7 +192,7 @@ pub(crate) fn function_internal_delete(
 
 pub(crate) fn function_internal_own_property_keys(
     func: impl FunctionInternalProperties,
-    agent: &mut Agent,
+    agent: Context<'_, '_, '_>,
 ) -> JsResult<Vec<PropertyKey>> {
     if let Some(backing_object) = func.get_backing_object(agent) {
         backing_object.internal_own_property_keys(agent)

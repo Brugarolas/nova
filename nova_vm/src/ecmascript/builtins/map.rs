@@ -12,6 +12,7 @@ use crate::{
             OrdinaryObject, Value,
         },
     },
+    engine::context::Context,
     heap::{
         indexes::{BaseIndex, MapIndex},
         CompactionLists, CreateHeapData, HeapMarkAndSweep, ObjectEntry, WorkQueues,
@@ -83,7 +84,11 @@ impl TryFrom<Object> for Map {
     }
 }
 
-fn create_map_base_object(agent: &mut Agent, map: Map, entries: &[ObjectEntry]) -> OrdinaryObject {
+fn create_map_base_object(
+    agent: Context<'_, '_, '_>,
+    map: Map,
+    entries: &[ObjectEntry],
+) -> OrdinaryObject {
     // TODO: An issue crops up if multiple realms are in play:
     // The prototype should not be dependent on the realm we're operating in
     // but should instead be bound to the realm the object was created in.
@@ -105,11 +110,14 @@ impl InternalSlots for Map {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 
-    fn create_backing_object(self, agent: &mut Agent) -> crate::ecmascript::types::OrdinaryObject {
+    fn create_backing_object(
+        self,
+        agent: Context<'_, '_, '_>,
+    ) -> crate::ecmascript::types::OrdinaryObject {
         let prototype = agent
             .current_realm()
             .intrinsics()

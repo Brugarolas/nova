@@ -15,6 +15,7 @@ use crate::{
             InternalMethods, InternalSlots, IntoObject, IntoValue, Object, OrdinaryObject, Value,
         },
     },
+    engine::context::Context,
     engine::{
         rootable::{HeapRootData, HeapRootRef, Rootable, Scoped},
         Executable, ExecutionResult, SuspendedVm, Vm,
@@ -38,7 +39,7 @@ impl Generator {
     }
 
     /// [27.5.3.3 GeneratorResume ( generator, value, generatorBrand )](https://tc39.es/ecma262/#sec-generatorresume)
-    pub(crate) fn resume(mut self, agent: &mut Agent, value: Value) -> JsResult<Object> {
+    pub(crate) fn resume(mut self, agent: Context<'_, '_, '_>, value: Value) -> JsResult<Object> {
         // 1. Let state be ? GeneratorValidate(generator, generatorBrand).
         match agent[self].generator_state.as_ref().unwrap() {
             GeneratorState::Suspended { .. } => {
@@ -144,7 +145,7 @@ impl Generator {
 
     /// [27.5.3.4 GeneratorResumeAbrupt ( generator, abruptCompletion, generatorBrand )](https://tc39.es/ecma262/#sec-generatorresumeabrupt)
     /// NOTE: This method only accepts throw completions.
-    pub(crate) fn resume_throw(self, agent: &mut Agent, value: Value) -> JsResult<Object> {
+    pub(crate) fn resume_throw(self, agent: Context<'_, '_, '_>, value: Value) -> JsResult<Object> {
         // 1. Let state be ? GeneratorValidate(generator, generatorBrand).
         match agent[self].generator_state.as_ref().unwrap() {
             GeneratorState::Suspended {
@@ -290,7 +291,7 @@ impl InternalSlots for Generator {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 }

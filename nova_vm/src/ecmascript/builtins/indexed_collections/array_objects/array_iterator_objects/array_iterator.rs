@@ -11,6 +11,7 @@ use crate::{
             InternalMethods, InternalSlots, IntoObject, IntoValue, Object, OrdinaryObject, Value,
         },
     },
+    engine::context::Context,
     heap::{
         indexes::ArrayIteratorIndex, CompactionLists, CreateHeapData, Heap, HeapMarkAndSweep,
         WorkQueues,
@@ -32,7 +33,7 @@ impl ArrayIterator {
     }
 
     pub(crate) fn from_object(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         array: Object,
         kind: CollectionIteratorKind,
     ) -> Self {
@@ -104,7 +105,7 @@ impl InternalSlots for ArrayIterator {
         agent[self].object_index
     }
 
-    fn set_backing_object(self, agent: &mut Agent, backing_object: OrdinaryObject) {
+    fn set_backing_object(self, agent: Context<'_, '_, '_>, backing_object: OrdinaryObject) {
         assert!(agent[self].object_index.replace(backing_object).is_none());
     }
 }

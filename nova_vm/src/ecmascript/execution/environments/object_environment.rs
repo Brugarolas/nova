@@ -12,6 +12,7 @@ use crate::{
         execution::{agent::ExceptionType, Agent, JsResult},
         types::{InternalMethods, Object, PropertyDescriptor, PropertyKey, String, Value},
     },
+    engine::context::Context,
     heap::{CompactionLists, HeapMarkAndSweep, WellKnownSymbolIndexes, WorkQueues},
 };
 
@@ -102,7 +103,7 @@ impl ObjectEnvironmentIndex {
     /// takes argument N (a String) and returns either a normal completion
     /// containing a Boolean or a throw completion. It determines if its
     /// associated binding object has a property whose name is N.
-    pub(crate) fn has_binding(self, agent: &mut Agent, n: String) -> JsResult<bool> {
+    pub(crate) fn has_binding(self, agent: Context<'_, '_, '_>, n: String) -> JsResult<bool> {
         let env_rec = &agent[self];
         // 1. Let bindingObject be envRec.[[BindingObject]].
         let binding_object = env_rec.binding_object;
@@ -147,7 +148,7 @@ impl ObjectEnvironmentIndex {
     /// is set to true; otherwise it is set to false.
     pub(crate) fn create_mutable_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         n: String,
         d: bool,
     ) -> JsResult<()> {
@@ -189,7 +190,12 @@ impl ObjectEnvironmentIndex {
     /// value) and returns either a normal completion containing UNUSED or a
     /// throw completion. It is used to set the bound value of the current
     /// binding of the identifier whose name is N to the value V.
-    pub(crate) fn initialize_binding(self, agent: &mut Agent, n: String, v: Value) -> JsResult<()> {
+    pub(crate) fn initialize_binding(
+        self,
+        agent: Context<'_, '_, '_>,
+        n: String,
+        v: Value,
+    ) -> JsResult<()> {
         // 1. Perform ? envRec.SetMutableBinding(N, V, false).
         self.set_mutable_binding(agent, n, v, false)?;
         // 2. Return UNUSED.
@@ -214,7 +220,7 @@ impl ObjectEnvironmentIndex {
     /// S.
     pub(crate) fn set_mutable_binding(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         n: String,
         v: Value,
         s: bool,
@@ -251,7 +257,7 @@ impl ObjectEnvironmentIndex {
     /// but if it does not the result depends upon S.
     pub(crate) fn get_binding_value(
         self,
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         n: String,
         s: bool,
     ) -> JsResult<Value> {
@@ -288,7 +294,7 @@ impl ObjectEnvironmentIndex {
     /// completion containing a Boolean or a throw completion. It can only
     /// delete bindings that correspond to properties of the environment
     /// object whose [[Configurable]] attribute have the value true.
-    pub(crate) fn delete_binding(self, agent: &mut Agent, name: String) -> JsResult<bool> {
+    pub(crate) fn delete_binding(self, agent: Context<'_, '_, '_>, name: String) -> JsResult<bool> {
         let env_rec = &agent[self];
         // 1. Let bindingObject be envRec.[[BindingObject]].
         let binding_boject = env_rec.binding_object;

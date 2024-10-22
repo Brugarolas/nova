@@ -5,33 +5,24 @@
 use num_bigint::ToBigInt;
 use num_traits::Pow;
 
-use crate::ecmascript::abstract_operations::testing_and_comparison::is_integral_number;
-use crate::ecmascript::abstract_operations::type_conversion::to_big_int;
-use crate::ecmascript::abstract_operations::type_conversion::to_index;
-use crate::ecmascript::abstract_operations::type_conversion::to_primitive;
-use crate::ecmascript::abstract_operations::type_conversion::PreferredType;
-use crate::ecmascript::builders::builtin_function_builder::BuiltinFunctionBuilder;
-use crate::ecmascript::builtins::ArgumentsList;
-use crate::ecmascript::builtins::Behaviour;
-use crate::ecmascript::builtins::Builtin;
-use crate::ecmascript::builtins::BuiltinIntrinsicConstructor;
-use crate::ecmascript::execution::agent::ExceptionType;
-use crate::ecmascript::execution::Agent;
-use crate::ecmascript::execution::JsResult;
-use crate::ecmascript::execution::RealmIdentifier;
-use crate::ecmascript::types::bigint::SmallBigInt;
-use crate::ecmascript::types::BigInt;
-use crate::ecmascript::types::BigIntHeapData;
-use crate::ecmascript::types::IntoObject;
-use crate::ecmascript::types::IntoValue;
-use crate::ecmascript::types::Number;
-use crate::ecmascript::types::Object;
-use crate::ecmascript::types::BUILTIN_STRING_MEMORY;
-use crate::ecmascript::types::{String, Value};
-
-use crate::heap::CreateHeapData;
-use crate::heap::IntrinsicConstructorIndexes;
-use crate::SmallInteger;
+use crate::{
+    ecmascript::{
+        abstract_operations::{
+            testing_and_comparison::is_integral_number,
+            type_conversion::{to_big_int, to_index, to_primitive, PreferredType},
+        },
+        builders::builtin_function_builder::BuiltinFunctionBuilder,
+        builtins::{ArgumentsList, Behaviour, Builtin, BuiltinIntrinsicConstructor},
+        execution::{agent::ExceptionType, Agent, JsResult, RealmIdentifier},
+        types::{
+            bigint::SmallBigInt, BigInt, BigIntHeapData, IntoObject, IntoValue, Number, Object,
+            String, Value, BUILTIN_STRING_MEMORY,
+        },
+    },
+    engine::context::Context,
+    heap::{CreateHeapData, IntrinsicConstructorIndexes},
+    SmallInteger,
+};
 
 /// ### [21.1.2.1 BigInt ( value )](https://tc39.es/ecma262/#sec-bigint-constructor)
 pub struct BigIntConstructor;
@@ -60,7 +51,7 @@ impl Builtin for BigIntAsUintN {
 
 impl BigIntConstructor {
     fn behaviour(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
         new_target: Option<Object>,
@@ -81,7 +72,7 @@ impl BigIntConstructor {
     }
 
     fn as_int_n(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -157,7 +148,7 @@ impl BigIntConstructor {
     }
 
     fn as_uint_n(
-        agent: &mut Agent,
+        agent: Context<'_, '_, '_>,
         _this_value: Value,
         arguments: ArgumentsList,
     ) -> JsResult<Value> {
@@ -179,7 +170,7 @@ impl BigIntConstructor {
         }
     }
 
-    pub(crate) fn create_intrinsic(agent: &mut Agent, realm: RealmIdentifier) {
+    pub(crate) fn create_intrinsic(agent: Context<'_, '_, '_>, realm: RealmIdentifier) {
         let intrinsics = agent.get_realm(realm).intrinsics();
         let big_int_prototype = intrinsics.big_int_prototype();
 
@@ -192,7 +183,7 @@ impl BigIntConstructor {
     }
 }
 
-fn number_to_big_int(agent: &mut Agent, value: Number) -> JsResult<BigInt> {
+fn number_to_big_int(agent: Context<'_, '_, '_>, value: Number) -> JsResult<BigInt> {
     if !is_integral_number(agent, value) {
         Err(agent.throw_exception_with_static_message(ExceptionType::RangeError, "Not an integer"))
     } else {
